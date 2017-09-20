@@ -1,6 +1,6 @@
 # Giriş
 
-Küçük ASP.NET kitabına başladığınız için teşekkürler. Bu kısa
+ASP.NET Core El Kitabı kitabına başladığınız için teşekkürler. Bu kısa
 kitabı yazmamın amacı ASP.NET Core 2.0 hakkında bilgi almak isteyen yazılımcılara kolay bir başlangıç yapmalarını sağlamak. Bu kitapta yeni framework ve bu framework ile nasıl web uygulamaları yapılacağını göreceksiniz.
 
 Bu kitap aşağıdaki yapıda hazırlanmıştır. Bu projede bir web to-do uygulaması yapacağız:
@@ -24,7 +24,7 @@ Bu kitap problemler düzeltildikçe yenilenmektedir. İngilizce yeni versiyonuna
 
 ## Bu kitap kimin için ?
 
-Eğer yazılım ile uğraşıyorsanız bu kitap size modern web uygulamarının nasıl yapılacağına dair bir giriş niteliğindedir. Web uygulamalarının nasıl yapılacağını 0'dan öğreneceksiniz. Doğal olarak küçük bir kitap olduğundan bunun içerisinde herşeyi bulamayabilirsiniz. Fakat bu daha ileri uygulamalar için bir başlangıç niteliğindedir.
+Eğer yazılım ile uğraşıyorsanız bu kitap size modern web uygulamarının nasıl yapılacağına dair bir giriş niteliğindedir. Web uygulamalarının nasıl yapılacağını 0'dan öğreneceksiniz. Doğal olarak kısa bir kitap olduğundan bunun içerisinde herşeyi bulamayabilirsiniz. Fakat bu daha ileri uygulamalar için bir başlangıç niteliğindedir.
 
 Eğer ASP.NET MVC geliştiriciyseniz, lütfen evinizdeymiş gibi hissedin. ASP.NET Core sizin bildiklerinize ek olarak yeni araçlar ve basitlikler getirmekte. Aşağıda bazı değişikliklere değineceğim.
 
