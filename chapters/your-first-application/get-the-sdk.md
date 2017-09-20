@@ -1,13 +1,13 @@
-## Get the SDK
-Search for "download .net core" and follow the instructions on Microsoft's download page for your platform. After the SDK has finished installing, open up the Terminal (or PowerShell on Windows) and use the `dotnet` command line tool (also called a **CLI**) to make sure everything is working:
+## SDK'yi indirin
+
+".net core indir" diye arattırıp Microsoft'un web sitesinde bulunan yönergeleri inceleyerek platformunuza .NET Coru'u indirin. Bilgisayarınıza yükledikten sonra `dotnet` komut satırı aracı ile (**CLI**) her şeyin doğru çalıştığına emin olmak için
 
 ```
 dotnet --version
 
 2.0.0
 ```
-
-You can get more information about your platform with the `--info` flag:
+ `--info` bayrağı ile çalıştırdığınızda aşağıdaki gibi platformunuza ait bilgi verecektir:
 
 ```
 dotnet --info
@@ -24,5 +24,4 @@ Runtime Environment:
 
 (more details...)
 ```
-
-If you see output like the above, you're ready to go!
+Eğer yukarıdaki gibi bir bilgi gördüyseniz artık hazırsınız.

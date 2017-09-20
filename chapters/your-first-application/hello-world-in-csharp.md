@@ -1,20 +1,19 @@
-## Hello World in C# #
-Before you dive into ASP.NET Core, try creating and running a simple C# application.
+## C# ile Merhaba Dünya #
 
-You can do this all from the command line. First, open up the Terminal (or PowerShell on Windows). Navigate to the location you want to store your projects, such as your Documents directory:
+ASP.NET Core a başlamadan önce basit bir C# uygulaması yapıp çalıştıralım
+
+Bunu komut satırı ile yapabilirsiniz. Önce Terminal( veya powershell ) açıp dosyayı kaydetmek istediğiniz yere gidin. Örneğin Documents:
 
 ```
 cd Documents
 ```
-
-Use the `dotnet` command to create a new project:
+ `dotnet` komutu ile yeni proje oluşturun:
 
 ```
 dotnet new console -o CsharpHelloWorld
 cd CsharpHelloWorld
 ```
-
-This creates a basic C# program that writes some text to the screen. The program is comprised of two files: a project file (with a `.csproj` extension) and a C# code file (with a `.cs` extension). If you open the former in a text or code editor, you'll see this:
+Bu basit bir C# projesi oluşturacaktır. Oluştururken ekrana bazı şeyler yazabilir. Proje iki önemli dosyadan oluşmaktadır. Bunlar `.csproj` proje dosyası uzantısı ve C# kodu `.cs` uzantısı ile oluşturduğunuz klasörde bulunmaktadır. Eğer editörünüz ile dosyayı açarsanız
 
 **`CsharpHelloWorld.csproj`**
 
@@ -28,8 +27,7 @@ This creates a basic C# program that writes some text to the screen. The program
 
 </Project>
 ```
-
-The project file is XML-based and defines some metadata about the project. Later, when you reference other packages, those will be listed here (similar to a `project.json` file for npm). You won't have to edit this file by hand often.
+Yukarıdaki gibi bir içerik göreceksiniz. Proje dosyası XML tabanlıdır ve proje hakkında bazı üstdata(metadata) göreceksiniz. Daha sonra başka paketlere referans ederseniz bunlar bu dosya içerisinde görünecektir. Yani bu proje npm de bulunan  `project.json` dosyası gibidir. Çoğunlukla bu dosyayı elle değiştirmeniz gerekmemektedir.
 
 **`Program.cs`**
 
@@ -48,14 +46,13 @@ namespace CsharpHelloWorld
 }
 ```
 
-`static void Main` is the entry point method of a C# program, and by convention it's placed in a class (a type of code structure or module) called `Program`. The `using` statement at the top imports the built-in System classes from .NET and makes them available to the code in the class.
+`static void Main` C# programının giriş noktasıdır. Eğer bu metod bir sınıf içerisinde yazılmışsa buna `Program` denir.  `using` cümlesi sistem içerisindeki sınıfları getirmek için kullanılır. Bunlar .NET sınıfları olabilecei gibi başka sınıflar da olabilir.
 
-From inside the project directory, use `dotnet run` to run the program. You'll see the output written to the console after the code compiles:
+Projenin içerisinde terminalinizden(Komut satırı)  `dotnet run` yazarak programı çalıştırabilirsiniz. Programınız çalıştığında aşağıdaki çıktıyı göreceksiniz.
 
 ```
 dotnet run
 
 Hello World!
 ```
-
-That's all it takes to scaffold and run a .NET program! Next, you'll do the same thing for an ASP.NET Core application.
+Bu bölümde .NET projesinin nasıl yaratılıp çalıştırıldığını gördünüz. Artık ASP.NET Core uygulamasına geçebiliriz.
