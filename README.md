@@ -1,6 +1,6 @@
 # Giriş
 
-Ufak ASP.NET kitabına başladığınız için teşekkürler. Bu kısa
+Küçük ASP.NET kitabına başladığınız için teşekkürler. Bu kısa
 kitabı yazmamın amacı ASP.NET Core 2.0 hakkında bilgi almak isteyen yazılımcılara kolay bir başlangıç yapmalarını sağlamak. Bu kitapta yeni framework ve bu framework ile nasıl web uygulamaları yapılacağını göreceksiniz.
 
 Bu kitap aşağıdaki yapıda hazırlanmıştır. Bu projede bir web to-do uygulaması yapacağız:
