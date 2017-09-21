@@ -1,13 +1,15 @@
-## Add a service class
-You've created a model, a view, and a controller. Before you use the model and view in the controller, you also need to write code that will get the user's to-do items from a database.
+## Servis Sınıfı Ekleme
 
-You could write this database code directly in the controller, but it's a better practice to keep all the database code in a separate class called a **service**. This helps keep the controller as simple as possible, and makes it easier to test and change the database code later.
+Modeli, Görüntü dosyasını ve kontrolörü oluşturdunuz. Kontrolör içerisinde oluşturduğunuz modeli kullanabilmek için yapılacaklar listesini veri tabanından alacak kodu yazmanız gerekmekte.
 
-> Separating your application logic into one layer that handles database access and another layer that handles presenting a view is sometimes called a layered, 3-tier, or n-tier architecture.
+Aslında veri tabanına bağlanıp model oluşturma işleminin tamamını kontrolör içerisinde yapabiliriz. Fakat bu iyi bir pratik değildir. Bunun yerine tüm veri tabanı kodlarını **servis** adını verdiğimiz sınıflarda yaparsak kontrolörlerimiz olabildiğince sade olur. Bu da test etmeyi ve daha sonra veri tabanı kodlarında değişiklik yapmayı kolaylaştırır.
 
-.NET and C# include the concept of **interfaces**, where the definition of an object's methods and properties is separate from the class that actually contains the code for those methods and properties. Interfaces make it easy to keep your classes decoupled and easy to test, as you'll see here (and later in the *Automated testing* chapter).
 
-First, create an interface that will represent the service that can interact with to-do items in the database. By convention, interfaces are prefixed with "I". Create a new file in the Services directory:
+> Uygulamayı mantık katmanı, veri tabanı katmanı ve uygulama katmanı gibi katmanlara ayırma olayına bazen **3-ties** veya **n-tier** mimari de denir.
+
+.NET ve C# **interface** konseptine sahiptir. Interface metodların ve özelliklerin aslında işi yapan sınıftan ayrılması olarak tanımlanabilir. Interface sınıflarınızı decoupled(ayrılmış) şekilde tutmanızı sağlar. Bu da test etmeyi daha kolay hale getirir. Bunu daha sonra  **Otomatik Test** bölümünde göreceğiz.
+
+Önce Interface'i oluşturarark yapılacaklar listesi için oluşturulacak servisi tanımlayalım. Bu oluşturacağımız dosyaları da `Services` klasörünün içerisinde oluşturmalıyız.
 
 **`Services/ITodoItemService.cs`**
 
@@ -26,21 +28,22 @@ namespace AspNetCoreTodo.Services
 }
 ```
 
-Note that the namespace of this file is `AspNetCoreTodo.Services`. Namespaces are a way to organize .NET code files, and it's customary for the namespace to follow the directory the file is stored in (`AspNetCoreTodo.Services` for files in the `Services` directory, and so on).
+Dikkat ederseniz dosyanın isimuzayı(namespace)  `AspNetCoreTodo.Services`. İsimuzayı .NET kodlarının organize olmasına yarar. Burada gördüğünüz isimuzayı klasör yapısını takip etmiştir.
 
-Because this file (in the `AspNetCoreTodo.Services` namespace) references the `TodoItem` class (in the `AspNetCoreTodo.Models` namespace), it needs to include a `using` statement at the top of the file to import that namespace. Without the `using` statement, you'll see an error like:
+Bu dosya `AspNetCoreTodo.Services` namespaceine sahip ve `TodoItem` sınıfını talep ettiğinden dolayı `AspNetCoreTodo.Models` isimuzayını bu dosyaya `using` cümlesi kullanarak eklememiz gerekmektedir. Aksi halde aşağıdaki gibi bir hata göreceksiniz.
 
 ```
 The type or namespace name 'TodoItem' could not be found (are you missing a using directive or an assembly reference?)
 ```
 
-Since this is an interface, there isn't any actual code here, just the definition of the `GetIncompleteItemsAsync` method. This method returns a `Task<IEnumerable<TodoItem>>`, instead of just an `IEnumerable<TodoItem>`.
+Interface olmasından dolayı aslında çalışan hiç bir ko yoktur sadece tanımı oluşturduk. Yapacağımız Serviste `GetIncompleteItemsAsync` metodunu uygulamamız ve `IEnumerable<TodoItem>` yerine `Task<IEnumerable<TodoItem>>` döndürmemiz gerekmektedir.
 
-> If this syntax looks confusing, think, "a Task that contains a list that contains TodoItems".
+> Eğer kafanız karıştıysa şu şekilde düşünebilirsiniz. "Yapılacaklar'ı içeren listeyi içeren bir görev"
 
-The `Task` type is similar to a future or a promise, and it's used here because this method will be **asynchronous**. In other words, the method may not be able to return the list of to-do items right away because it needs to go talk to the database first. (More on this later.)
+`Task` tipi promise ve future benzeri bir tiptir, burada kullanmamızın nedeni bu metodu **asenkron** yapmak istememizden dolayıdır. Diğer bir deyişle veri tabanından alacağımız listenin ne zaman geri döneceğini bilmediğimizden bu şekilde kullanmaktayız.
 
-Now that the interface is defined, you're ready to create the actual service class. I'll cover database code in depth in the *Use a database* chapter, but for now you'll just fake it and return hard-coded values:
+Artık Interface'i tanımladık. Gerçekten işi yapan servis sınıfını yapmaya başlayabiliriz. Veri tabanı kodunu daha sonraki **Veri tabanı kullanma** bölümünde daha derinine inceleyeceğiz. Şimdilik örnek veriler kullanarak işlemimizi gerçekleştireceğiz.
+
 
 **`Services/FakeTodoItemService.cs`**
 
@@ -77,4 +80,4 @@ namespace AspNetCoreTodo.Services
 }
 ```
 
-This `FakeTodoItemService` implements the `ITodoItemService` interface but always returns the same array of two `TodoItem`s. You'll use this to test the controller and view, and then add real database code in *Use a database*.
+`FakeTododItemService` `ITodoItemService` arayüzünü sağlamıştır. Şu anda her defasında iki tane yapılacak döndermektedir. Fakat ilerde *Veri Tabanı Kullanma* bölümünde bu verileri veri tabanından çekeceğiz.
