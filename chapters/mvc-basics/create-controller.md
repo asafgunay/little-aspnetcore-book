@@ -1,8 +1,9 @@
-## Create a controller
+## Kontrolör Oluşturma
 
-There are already a few controllers in the project's Controllers folder, including the `HomeController` that renders the default welcome screen you see when you visit `http://localhost:5000`. You can ignore these controllers for now.
+Hali hazırda Controller klasöründe `HomeController` gibi ana sayfayı gösteren bir kontrolör dahil birkaç kontrolör bulunmaktadır. Sunucumuz çalıştığında tarayıcıdan `http://localhost:5000` adresine gittiğimizde bize o sayfayı gösteren kontrolör  `HomeController` dür.
 
-Create a new controller for the to-do list functionality, called `TodoController`, and add the following code:
+Yapılacaklar listesi için bu klasör içerisine `TodoController` adında bir kontrolör oluşturalım. Sonuna .cs eklentisini koymayı unutmayın. Oluşturduktan sonra içerisine aşağıdaki kodu yapıştırın
+
 
 **`Controllers/TodoController.cs`**
 
@@ -17,12 +18,12 @@ namespace AspNetCoreTodo.Controllers
 {
     public class TodoController : Controller
     {
-        // Actions go here
+        // Aksiyonlar buraya gelecek
     }
 }
 ```
 
-Routes that are handled by controllers are called **actions**, and are represented by methods (functions) in the controller class. For example, the `HomeController` includes three action methods (`Index`, `About`, and `Contact`) which are mapped by ASP.NET Core to these route URLs:
+Kontrolör tarafından idare edilen rotalara **aksiyon** denir. Bunlar kontrolör içindeki metodlarla ifade edilir. Örneğin `HomeController` üç tane aksiyon bulunmaktadır (`Index`, `About`, ve `Contact`). Bu aksiyonlar ASP.NET Core tarafında şu şekilde rotalara yerleştirilmişlerdir.
 
 ```
 localhost:5000/Home         -> Index()
@@ -30,26 +31,25 @@ localhost:5000/Home/About   -> About()
 localhost:5000/Home/Contact -> Contact()
 ```
 
-There are a number of conventions (common patterns) used by ASP.NET Core, such as the pattern that `FooController` becomes `/Foo`, and the `Index` action name can be left out of the URL. You can customize this behavior if you'd like, but for now, we'll stick to the default conventions.
+ASP.NET Core rotaları yaratmak için birkaç kalıp kullanmaktadır. Örneğin kontrolörümüzün ismi `FooController` olur ise rotamız doğrudan `/Foo` oluyor. `/Foo/Index` ile `/Foo` aynı anlama geliyor ayrıca `Index` aksiyonu yazmanıza gerek kalmıyor yani. Bu proje boyunca biz varsayılan haliyle kullanacağız.
 
-Add a new action called `Index` to the `TodoController`, replacing the  `// Actions go here` comment:
+`TodoController` içerisine `// Aksiyon buraya gelecek` yazısı yerine `Index` aksiyonu oluşturalım
 
 ```csharp
 public class TodoController : Controller
 {
     public IActionResult Index()
     {
-        // Get to-do items from database
+        // Database'den değerleri getir
 
-        // Put items into a model
+        // Gelen değerleri yeni modele koy
 
-        // Pass the view to a model and render
+        // Modeli Görünyüye ekle ve sayfayı göster.
     }
 }
 ```
+Aksiyon metodları Görüntü(view), JSON verisi, veya HTTP status kodu `200 OK` veya `404 Not Found` gibi esnek değerler döndürebilir.
 
-Action methods can return views, JSON data, or HTTP status codes like `200 OK` or `404 Not Found`. The `IActionResult` return type gives you the flexibility to return any of these from the action.
+Pratikte kontrolörün olabildiğince basit olmasına özen gösterilir. Böyle bir kontrolörü hedef olarak aldığımızda kontrolör sadece veritabanından değerler alıp bunları modele koyma işini yapar. Ardından önyüze gönderir.
 
-It's a best practice to keep controllers as lightweight as possible. In this case, the controller should only be responsible for getting the to-do items from the database, putting those items into a model the view can understand, and sending the view back to the user's browser.
-
-Before you can write the rest of the controller code, you need to create a model and a view.
+Kontrolörün devamını yazmadan önce Model ve Görüntü (view) oluşturmanız gerekmektedir.
