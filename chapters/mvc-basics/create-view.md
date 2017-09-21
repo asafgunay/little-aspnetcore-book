@@ -1,9 +1,12 @@
-## Create a view
-Views in ASP.NET Core are built using the Razor templating language, which combines HTML and C# code. (If you've written pages using Jade/Pug or Handlebars moustaches in JavaScript, ERB in Ruby on Rails, or Thymeleaf in Java, you've already got the basic idea.)
+## Görüntü(View) Oluşturma
 
-Most view code is just HTML, with the occasional C# statement added in to pull data out of the view model and turn it into text or HTML. The C# statements are prefixed with the `@` symbol.
+ASP.NET Core'da görüntü Razor Şablon Dili üzerine kuruludur. Bu HTML ile C# kodunu birleştirebilmemizi sağlar. ( Eğer daha öncesinde Javascript'de Jade/Pug veya Handlebars, Javada Thymeleaf kullandıysanız ana hatlarıyla ne yaptığımızı anladınız demektir)
 
-The view rendered by the `Index` action of the `TodoController` needs to take the data in the view model (an array of to-do items) and display it as a nice table for the user. By convention, views are placed in the `Views` directory, in a subdirectory corresponding to the controller name. The file name of the view is the name of the action with a `.cshtml` extension.
+Çoğunlukla görüntü kodları sadece HTML'dir. Görüntü Modelinden gelen değerleri içerisinden alıp HTML içerisine yerleştirmek için C# kullanırız. C# komutları `@` sembolü ile başlar.
+
+`Index` aksiyonu tarafından gösterilecek sayfada liste halinde görüntü modelinde taşınan `TodoItem`'ı göstermemiz gerekmektedir. İsmine münhasır Görüntü dosyalarını View klasörünün içerisinde oluşturmamız gerekmektedir. Bu klasörün içerisine kontrolörün ismine göre bir başka klasör açıp aksiyon ismiyle dosya oluşturmamız gerekmektedir.
+
+Örneğin Index aksiyonunu kullanacağız ve kontrolörümüzün ismi `TodoController`, yapmamız gereken Views içerisine Todo adında bir klasör oluşturmak ve bunun içerisine `Index.cshtml` dosyası oluşturmak. Razor şema dili `.cshtml` uzantısını kullanmaktadır.
 
 **`Views/Todo/Index.cshtml`**
 
@@ -11,7 +14,7 @@ The view rendered by the `Index` action of the `TodoController` needs to take th
 @model TodoViewModel;
 
 @{
-    ViewData["Title"] = "Manage your todo list";
+    ViewData["Title"] = "Yapılacaklar Listesini Yönet";
 }
 
 <div class="panel panel-default todo-panel">
@@ -41,26 +44,28 @@ The view rendered by the `Index` action of the `TodoController` needs to take th
   <div class="panel-footer add-item-form">
     <form>
         <div id="add-item-error" class="text-danger"></div>
-        <label for="add-item-title">Add a new item:</label>
+        <label for="add-item-title">Yeni yapılacak ekle:</label>
         <input id="add-item-title">
-        <button type="button" id="add-item-button">Add</button>
+        <button type="button" id="add-item-button">Ekle</button>
     </form>
   </div>
 </div>
 ```
 
-At the very top of the file, the `@model` directive tells Razor which model to expect this view to be bound to. The model is accessed through the `Model` property.
 
-Assuming there are any to-do items in `Model.Items`, the `foreach` statement will loop over each to-do item and render a table row (`<tr>` element) containing the item's name and due date. A checkbox is also rendered that contains the item's ID, which you'll use later to mark the item as completed.
+Sayfanın başındaki `@model` tanımı Razor'a hangi modelin beklendiğini bildiriyor. Bu modele daha sonra `Model` özelliği üzerinden ulaşılır.
 
-### The layout file
-You might be wondering where the rest of the HTML is: what about the `<body>` tag, or the header and footer of the page? ASP.NET Core uses a layout view that defines the base structure that the rest of the views are rendered inside of. It's stored in `Views/Shared/_Layout.cshtml`.
+`Model.Items`da veri olduğunu varsayarsak bu verilere `foreach` cümlesiyle döngü içerisine alabilir ve bu döngünün içerisinde `<tr>`ile satırı oluşturup değerlerimizi yazdırabiliriz. Ayrıca gördüğünüz gibi her satır için onay kutusunu da başta yerleştirdik. Daha sonra bunu işaretlediğimizde görevin tamamlandığını bildiren kodu yazacağız.
 
-The default ASP.NET Core template includes Bootstrap and jQuery in this layout file, so you can quickly create a web application. Of course, you can use your own CSS and JavaScript libraries if you'd like.
+### Dosya düzeni
 
-### Customizing the stylesheet
+Dosyanın içerisine baktığınızda `<body>` veya `<footer>` nerede diyebilirsiniz. Görüntü dosyaları daha kolay çalışabilmemiz için `Views/Shared/_Layout.cshtml` içerisinde tanımlanır. Bizim oluşturduğumuz yeni sayfa dinamik olarak değişen içerik bölümüne gelir. 
 
-For now, just add these CSS style rules to the bottom of the `site.css` file:
+ASP.NET Core'un varsayılan teması Bootstrap ve JQuery'i içerir. Böylece çok hızlı bir şekilde web uygulaması geliştirebilirsiniz. Tabiki kendi CSS ve Javascript kütüphanelerinizi de kullanabilirsiniz.
+
+### Stil üzerinde değişiklikler
+
+Şimdilik CSS üzerinde değişiklik yapmak için `site.css` dosyasının en altına aşağıdaki stilleri yapıştırın.
 
 **`wwwroot/css/site.css`**
 
@@ -75,6 +80,6 @@ table tr.done {
 }
 ```
 
-You can use CSS rules like these to completely customize how your pages look and feel.
+Kodda da gördüğünüz gibi CSS kuralları ile sayfanıza istediğiniz stili verebilirsiniz.
 
-ASP.NET Core and Razor can do much more, such as partial views and server-rendered view components, but a simple layout and view is all you need for now. The official ASP.NET Core documentation (at `https://docs.asp.net`) contains a number of examples if you'd like to learn more.
+ASP.NET Core elbette bundan çok daha fazlasını yapabilir. Örneğin kısmi görüntüler(partial views) veya sunucu tarafından yorumlanmış görüntü bileşenleri vs. Fakat basit bir web sitesi için bunlara gerek yoktur. Bu konuyu daha derinine incelemek isterseniz `https://docs.asp.net` adresini kullanabilirsiniz.

@@ -7,7 +7,7 @@
 * [MVC temelleri](chapters/mvc-basics/README.md)
     * [Kontrolör Oluşturma](chapters/mvc-basics/create-controller.md)
     * [Model Oluşturma](chapters/mvc-basics/create-models.md)
-    * [View oluşturma](chapters/mvc-basics/create-view.md)
+    * [Görüntü(View) oluşturma](chapters/mvc-basics/create-view.md)
     * [Servis sınıfı ekleme](chapters/mvc-basics/add-service-class.md)
     * [Bağımlı Enjeksiyon Kullanma](chapters/mvc-basics/use-dependency-injection.md)
     * [Kontrolörü Bitirme](chapters/mvc-basics/finish-controller.md)
