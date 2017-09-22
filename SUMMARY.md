@@ -10,7 +10,7 @@
     * [Görüntü(View) oluşturma](chapters/mvc-basics/create-view.md)
     * [Servis sınıfı ekleme](chapters/mvc-basics/add-service-class.md)
     * [Bağımlı Enjeksiyon Kullanma](chapters/mvc-basics/use-dependency-injection.md)
-    * [Kontrolörü Bitirme](chapters/mvc-basics/finish-controller.md)
+    * [Kontrolörü Tamamlama](chapters/mvc-basics/finish-controller.md)
 * [Ekstra paket Ekleme](chapters/add-external-packages/README.md)
 * [Veri Tabanı Kullanma](chapters/use-a-database/README.md)
     * [Veri Tabanına Bağlanma](chapters/use-a-database/connect-to-a-database.md)

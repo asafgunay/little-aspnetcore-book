@@ -1,5 +1,7 @@
-## Finish the controller
-The last step is to finish the controller code. The controller now has a list of to-do items from the service layer, and it needs to put those items into a `TodoViewModel` and bind that model to the view you created earlier:
+## Kontrolörü Tamamlama
+
+Artık kontrolörümüzü tamamlayabiliriz. Artık kontrolörümüzün servis katmanına bağlandığını varsayabiliriz. Bu servisten aldığımız veriler ile daha önce oluşturduğumuz`TodoViewModel` oluşturup bunu önyüze gönderebiliriz.
+
 
 **`Controllers/TodoController.cs`**
 
@@ -18,8 +20,9 @@ public async Task<IActionResult> Index()
 ```
 
 ## Test it out
-To start the application, press F5 (if you're using Visual Studio or Visual Studio Code), or just run `dotnet run` in the terminal. If the code compiles without errors, the server will spin up on port 5000 by default.
+Eğer Visual Studio Code veya Visual Studio kullanıyorsanız F5 Tuşu ile projenizi çalıştırabilirsiniz. Bunun yerine komut satırı veya terminalden `dotnet run` komutunu da kullanabilirsiniz elbette. Eğer kodunuzda hata yoksa sunucunuz varsayılan port olan `5000` portundan çalışmaya başlayacaktır.
 
-If your web browser didn't open automatically, open it and navigate to http://localhost:5000/todo. You'll see the view you created, with the data pulled from your fake database layer (for now).
+Eğer tarayıcınız otomatik olarak açılmadıysa `http://localhost:5000/todo' adresine giderek, hazırladığımız sahte(fake) veri tabanı katmanından verileri çektiğini ve ekranda gösterdiğini göreceksiniz.
+ 
+ Tebrikler! Sırada yaptığımız bu projeye 3. parti paketler ekleme ve gerçek veri tabanına bağlama var.
 
-Congratulations! You've built a working ASP.NET Core application. Next, you'll take it further with third-party packages and real database code.
