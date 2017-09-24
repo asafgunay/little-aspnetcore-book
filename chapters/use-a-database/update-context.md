@@ -1,6 +1,5 @@
-## Update the context
-
-There's not a whole lot going on in the database context yet:
+## İçeriği Güncelleme
+Şu anda veri tabanı bağlamında çok bir değişiklik yok
 
 **`Data/ApplicationDbContext.cs`**
 
@@ -21,7 +20,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     }
 }
 ```
-
+`ApplicationDbContext`'ine aşağıdaki gibi `DbSet` ekleyin.
 Add a `DbSet` property to the `ApplicationDbContext`, right below the constructor:
 
 ```csharp
@@ -34,9 +33,8 @@ public DbSet<TodoItem> Items { get; set; }
 
 // ...
 ```
+`DbSet` veri tabanında bir tablo veya koleksiyonu ifade eder. `Items` adında bir `DbSet<TodoItem>` oluşturarak Entity Framework Core'a `Items` adında bir tabloya `TodoItem` modellerini saklamak istediğinizi söylüyorsunuz. 
 
-A `DbSet` represents a table or collection in the database. By creating a `DbSet<TodoItem>` property called `Items`, you're telling Entity Framework Core that you want to store `TodoItem` entities in a table called `Items`.
+Tüm yapmanız gereken bu kadar. Fakat küçük bir problem var. Şu anda veri tabanı ve `ApplicationDbContext` bir biriyle senkronize değil. ( Sadece kodu değiştirmek veri tabanını değiştirmemektedir.)
 
-That's all you need to update on the context, but there's one small problem: the context and database are now out of sync, because there isn't actually an `Items` table in the database. (Just updating the code of the context class doesn't change the database itself.)
-
-In order to update the database to reflect the change you just made to the context, you need to create a **migration**.
+Veri tabanının yapılan değişikliği uygulayabilmesi için **migration(Göç)** oluşturmamız gerekmektedir.

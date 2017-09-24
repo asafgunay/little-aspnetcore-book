@@ -1,8 +1,8 @@
-## Create a new service class
+## Yeni Servis Sınıfı Oluşturma
 
-Back in the *MVC basics* chapter, you created a `FakeTodoItemService` that contained hard-coded to-do items. Now that you have a database context, you can create a new service class that will use Entity Framework Core to get the real items from the database.
+**MVC Temelleri** bölümünde `FakeTodoItemService` adında bir sınıf oluşturup doğrudan yapılacaklar listesi eklemiştik. Artık veri tabanı kaynağına sahip olduğumuzadan dolayı Entity Framework Core ile gerçek verileri kullanabiliriz.
 
-Delete the `FakeTodoItemService.cs` file, and create a new file:
+`FakeTodoItemsService.cs`'yi silin ve `TodoItemService.cs` adında yeni bir dosya oluşturun.
 
 **`Services/TodoItemService.cs`**
 
@@ -38,25 +38,27 @@ namespace AspNetCoreTodo.Services
 }
 ```
 
-You'll notice the same dependency injection pattern here that you saw in the MVC basics chapter, except this time it's the `ApplicationDbContext` that gets injected into the service. The `ApplicationDbContext` is already being added to the service container in the `ConfigureServices` method, so it's available for injection here.
+Dikkat ederseniz **MVC Temelleri** Bölümünde oluşturduğumuz bağımlı enjeksiyon burada da var. (Constructor'a içerik ekleme) Fakat bu defa `ApplicationDbContext` servise enjekte edilmiştir. Daha öncesinde `ApplicationDbContext` servis konteynerına eklendiğinden dolayı burada servise enjekte edilebilir. Aksi halde `ConfigureServices` içerisinde bunu belirtmemiz gerekirdi.
 
-Let's take a closer look at the code of the `GetIncompleteItemsAsync` method. First, it uses the `Items` property of the context to access all the to-do items in the `DbSet`:
+`GetIncompleteItemAsync` metodunu daha yakından inceleyecek olursak. Öncelikle `DbSet` içerisindeki tüm verilere ulaşabilmek için `Items` özelliğini(property) kullanmaktadır. 
 
 ```csharp
 var items = await _context.Items
 ```
 
-Then, the `Where` method is used to filter only the items that are not complete:
+Ardından, `Where` metodu ile bunlardan sadece tamamlanmamış olanları seçmektedir.
+
 
 ```csharp
 .Where(x => x.IsDone == false)
 ```
 
-The `Where` method is a feature of C# called LINQ (language integrated query), which takes cues from functional programming and makes it easy to express database queries in code. Under the hood, Entity Framework Core translates the method into a statement like `SELECT * FROM Items WHERE IsDone = 0`, or an equivalent query document in a NoSQL database.
+`Where` metodu C# LINQ'e ait bir metoddur. Fonksiyonel programlamadan bazı esintiler almıştır. LINQ bizim daha kolay veri tabanı sorguları yazmamıza yardımcı olur. Aslında yukarıda oluşturduğumuz sorgu şu şekildedir: `SELECT * FROM Items where IsDone=0` veya bunun eşiti NoSQL sorgusudur.
 
-Finally, the `ToArrayAsync` method tells Entity Framework Core to get all the entities that matched the filter and return them as an array. The `ToArrayAsync` method is asynchronous (it returns a `Task`), so it must be `await`ed to get its value.
+Sonunda `ToArrayAsync` metodu bu verileri asenkron dizi haline getirmeye yarar. Yani bu metodun `await` kelimesiyle çağırılması gerekmektedir. 
 
-To make the method a little shorter, you can remove the intermediate `items` variable and just return the result of the query directly (which does the same thing):
+Metodu daha kusa yazmak için `items`değişkenini silebilirsiniz. Böylece gelen değeri doğrudan değişken olmadan dönderebilirsiniz.
+
 
 ```csharp
 public async Task<IEnumerable<TodoItem>> GetIncompleteItemsAsync()
@@ -67,18 +69,18 @@ public async Task<IEnumerable<TodoItem>> GetIncompleteItemsAsync()
 }
 ```
 
-### Update the service container
+### Servis Konteynerını Güncelleme
 
-Because you deleted the `FakeTodoItemService` class, you'll need to update the line in `ConfigureServices` that is wiring up the `ITodoItemService` interface:
+`FakeTodoItemService`'i sildiğimizden dolayı, `ConfigureServices`'i güncellememiz gerekmektedir.
+
 
 ```csharp
 services.AddScoped<ITodoItemService, TodoItemService>();
 ```
+`TodoController` `ITodoItemService`'e bağımlıdır. Bu değişiklikten hiç haberi olmayacaktır. Fakat arka planda sahte servisten gerçek servise geçmiş bulunmaktayız.
 
-The `TodoController` that depends on `ITodoItemService` will be blissfully unaware of the change, but under the hood you'll be using Entity Framework Core and talking to a real database!
+### Test
 
-### Test it out
+Uygulamayı tekrar çalıştırın ve `http://localhost:5000/todo`'a gidin. Sahte verilerin gittiğini göreceksiniz. Artık uygulamanız veri tabanından gerçek verileri çekmektedir. 
 
-Start up the application and navigate to `http://localhost:5000/todo`. The fake items are gone, and your application is making real queries to the database. There just doesn't happen to be any saved to-do items!
-
-In the next chapter, you'll add more features to the application, starting with the ability to create new to-do items.
+Bir sonraki bölümde uygulamaya yeni yapılacka ekleme gibi özellikler ekleyeceksiniz.

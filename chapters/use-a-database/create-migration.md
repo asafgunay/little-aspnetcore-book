@@ -1,28 +1,30 @@
-## Create a migration
+## Migration(Göç) Oluşturma
 
-Migrations keep track of changes to the database structure over time, and make it possible to undo (roll back) a set of changes, or create a second database with the same structure as the first. With migrations, you have a full history of modifications like adding or removing columns (and entire tables).
+Migration(Göç) veri tabanı yapısındaki değişklikleri tutmaya yarar. Böylece veri tabanı üzerinde geriye dönüç(roll back) veya aynı yapıya sahip ikinci bir veri tabanı yapmak mümkündür. Böylece değişen her kolon'u takip edebilmek mümkündür.
 
-Since the context and the database are now out of sync, you'll create a migration to update the database and add the `Items` table you defined in the context.
+Kaynak(Context) ve veri tabanı şu anda senkronize olmadığından yeni bir **Göç** oluşturarak veri tabanını güncellememiz gerekmektedir. Bunu `Items` alanı için yapacağız.
 
 ```
 dotnet ef migrations add AddItems
 ```
 
-This creates a new migration called `AddItems` by examining any changes you've made to the context.
+Bu **Kaynak** ta yaptığınız değişiklikleri inceleyerek `AddItems` adında yeni bir **Göç** oluşturur
 
-> If you get an error like:
+
+> Eğer şöyle bir hata alıyorsanız : 
 > `No executable found matching command "dotnet-ef"`
-> Make sure you're in the right directory. These commands must be run from the project root directory (where the `Program.cs` file is).
+> Doğru klasörde olduğunuza emin olun. Bu komutlar ana klasörden çalıştırılmalıdır. Ana klasör `Program.cs` nin bulunduğu klasördür.
 
-If you open up the `Data/Migrations` directory, you'll see a few files:
+Eğer `Data/Migration` klasörünü açarsanız, bir kaç dosya göreceksiniz.
 
 ![Multiple migrations](migrations.png)
 
-The first migration file (with a name like `00_CreateIdentitySchema.cs`) was created for you, and already applied to the database, by `dotnet new`. Your `AddItem` migration is prefixed with a timestamp when you create it.
+Bizim için ilk oluşturulan **göç** dosyası `00_CreateIdentitySchema.cs` adı ile oluşturulmuş ve veri tabanı bu şekilde güncellenmiştir. `AddItems` dosyasının önüne `timestamp` eklenmiş ve bu şekilde **göç** dosyası oluşturulmuştur.
 
-> Tip: You can see a list of migrations with `dotnet ef migrations list.
+> Tavsiye: **Göç** listesini `dotnet ef migrations list` ile görebilirsiniz.
 
-If you open your migration file, you'll see two methods called `Up` and `Down`:
+**Göç dosyasını açtığınızda `Up` ve `Down` adında iki metod göreceksiniz.
+
 
 **`Data/Migrations/<date>_AddItems.cs`**
 
@@ -58,34 +60,35 @@ protected override void Down(MigrationBuilder migrationBuilder)
     // (some code...)
 }
 ```
+`Up` metodu **Göç**ü çalıştırdığımızda veri tabanına etki edecek metoddur. Kaynağa `DbSet<TodoItem>` eklediğinizden dolayı Entity Framework Core `Items` adında bir tablo oluşturacak ve `TodoItem` modelinde bulunan alanlara uyacak kolonlar oluşturacaktır.
 
-The `Up` method runs when you apply the migration to the database. Since you added a `DbSet<TodoItem>` to the database context, Entity Framework Core will create an `Items` table (with columns that match a `TodoItem`) when you apply the migration.
+`Down` metodu ise tersini yapar. **Göç** geri alındığında `Items` tablosunu siler.
 
-The `Down` method does the opposite: if you need to undo (roll back) the migration, the `Items` table will be dropped.
 
-### Workaround for SQLite limitations
+### SQLite Sınırlılığına Geçici Çözüm
 
-There are some limitations of SQLite that get in the way if you try to run the migration as-is. Until this problem is fixed, use this workaround:
+Projede SQLite kullanmanın bazı sınırlılıkları var. Bu sınırlılıklar düzelene kadar şu şekilde geçici bir çözüm yolu kullanabilirsiniz.
 
-* Comment out the `migrationBuilder.AddForeignKey` lines in the `Up` method.
-* Comment out any `migrationBuilder.DropForeignKey` lines in the `Down` method.
 
-If you use a full-fledged SQL database, like SQL Server or MySQL, this won't be an issue and you won't need to do this (admittedly hackish) workaround.
+* `Up` metodundaki `migrationBuilder.AddForeignKey` satırlarını yorum olarak değiştirin. ( `//` kullanabilirsiniz.)
+* `Down` metodundaki `migrationBuilder.DropForeignKey` satırlarını yorum olarak değiştirin.
 
-### Apply the migration
+Eğer MySQL veya SQL Server gibi tam teşekküllü bir SQL veri tabanı kullanıyor olsaydınız böyle bir değişikliğe ihtiyacınız olmayacaktı. **Göç** dosyasını çalıştırdığınızda hiç bir sorun almayacaktınız.
 
-The final step after creating one (or more) migrations is to actually apply them to the database:
+### **Göç**ü uygulayın
+
+**Göç**ü oluşturduktan sonraki son basamak uygulanmasıdır : 
 
 ```
 dotnet ef database update
 ```
 
-This command will cause Entity Framework Core to create the `Items` table in the database.
+Yukarıdaki komut Entity Framework Core'un `Items` adında bir tablo oluşturmasına neden olacaktır.
 
-> If you want to roll back the database, you can provide the name of the *previous* migration:
+> Eğer bu güncellemeyi geri almak istiyorsanız. Daha önceki bir **göç** ismini vererek bu işlemi gerçekleştirebilirsiniz. 
 > `dotnet ef database update CreateIdentitySchema`
-> This will run the `Down` methods of any migrations newer than the migration you specify.
+> Bu komut `CreateIdentitySchema` dan sonra oluşturulmuş tüm **göç*lerin `Down` metodunu çalıştıracaktır.
 
-> If you need to completely erase the database and start over, run `dotnet ef database drop` followed by `dotnet ef database update` to re-scaffold the database and bring it up to the current migration.
+> Eğer veri tabanını tamamen silmek istiyorsanız. `dotnet ef database drop` kullanabilirsiniz. Ardından `dotnet ef database update` yazdığınızda son **Göç** e kadar tüm göçler çalıştırılır.
 
-That's it! Both the database and the context are ready to go. Next, you'll use the context in your service layer.
+Şu anda veri tabanı ayağını tamamlamış durumdayız. Sonraki adımımız bu kaynağı servis içinde kullanmak.
