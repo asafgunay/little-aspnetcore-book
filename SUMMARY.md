@@ -18,7 +18,7 @@
     * [Göç Oluşturma](chapters/use-a-database/create-migration.md)
     * [Yeni Servis Sınıfı Oluşturma](chapters/use-a-database/create-service-class.md)
 * [Yeni Özellikler Ekleme](chapters/add-more-features/README.md)
-    * [Yeni To-do Maddesi Ekleme](chapters/add-more-features/add-todo-items.md)
+    * [Yeni Yapılacak Maddesi Ekleme](chapters/add-more-features/add-todo-items.md)
     * [Maddeleri Onay Kutusu ile Tamamlama](chapters/add-more-features/complete-with-checkbox.md)
 * [Güvenlik ve Kimlik](chapters/security-and-identity/README.md)
     * [Facebook Girişi Ekleme](chapters/security-and-identity/add-facebook-login.md)

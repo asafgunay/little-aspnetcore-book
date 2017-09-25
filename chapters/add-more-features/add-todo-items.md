@@ -1,19 +1,20 @@
-## Add new to-do items
+## Yeni Yapılacak Maddesi Ekleme
 
-The user will add new to-do items with a simple form below the list:
+Kullanıcılar yeni yapılacak maddesini aşağıdaki gibi yapılacaklar listesinin altındaki form'dan ekleyecekler.
 
 ![Final form](final-form.png)
 
-Adding this feature requires a few steps:
+Bu özelliği eklemek için şu adımları tamamlamak gerekmektedir:
 
-* Modifying the view to add the HTML form elements
-* Adding JavaScript that will send the data to the server
-* Creating a new action on the controller to handle this request
-* Adding code to the service layer to update the database
+* Görüntü(View) dosyasını eğiştirerek form elementlerini ihtiyacımıza göre düzenlemek
+* Javascript kodu ile butona tıklandığında bunu arka-uç'a göndermek.
+* Kontrolörde yeni aksiyon oluşturarak gelecek taleplere cevap vermek.
+* Servis katmanına veri tabanını güncelleyecek metodları yazmak.
 
-### Add a form to the view
 
-First, add some HTML to the bottom of `Views/Todo/Index.cshtml`:
+### Görüntüye Form Eklemek.
+
+`Views/Todo/Index.cshtml` in en altına aşağıdaki formu ekleyiniz.
 
 ```html
 <div class="add-item-form">
@@ -25,23 +26,21 @@ First, add some HTML to the bottom of `Views/Todo/Index.cshtml`:
     </form>
 </div>
 ```
-
-You'll use jQuery to send a POST request to the server when the Add button is clicked.
+Arka-uç'a POST talebiyle veri gönderebilmek için jQuery kullanacağız. Butona tıklandığında bu işlem gerçekleşecek.
 
 ### Add JavaScript code
 
-Open the `wwwroot/site.js` file and add this code:
+`wwwroot/site.js` dosyasını açın ve aşağıdaki kodu ekleyin.
 
 ```javascript
 $(document).ready(function() {
 
-    // Wire up the Add button to send the new item to the server
+    // Add butonuna tıklanıldığında addItem fonksiyonu çalışacak.
     $('#add-item-button').on('click', addItem);
 
 });
 ```
-
-Then, write the `addItem` function at the bottom of the file:
+`addItem` fonksiyonunu dosyanın altına aşağıdaki gibi ekleyiniz.
 
 ```javascript
 function addItem() {
@@ -61,13 +60,13 @@ function addItem() {
 }
 ```
 
-This function will send a POST request to `http://localhost:5000/Todo/AddItem` with the name the user typed. The third parameter passed to the `$.post` method (the function) is a success handler that will run if the server responds with `200 OK`. The success handler function uses `window.location` to refresh the page (by setting the location to `/Todo`, the same page the browser is currently on). If the server responds with `400 Bad Request`, the `fail` handler attached to the `$.post` method will try to pull out an error message and display it in a the `<div>` with id `add-item-error`.
+Bu fonksiyon `http://localhost:5000/Todo/AddItem`'a post talebi ile kullanıcının metin kutusuna girdiği değeri paslar. `$.post` fonksiyonundaki üçüncü parametre eğer işlem başarı ile gerçekleşirse çalışacak fonksiyondur. Eğer kontrolör başarı ile çalışır ve cevap dönerse bu cevapla birlikte `200 OK` döner. Başarılı olduğunda sayfa `windwos.location` ile yönlendirilerek yeniden yüklenir. Eğer sunucu `400 Bad Request` cevabı verseydi `fail` fonksiyonu çalışacaktı. Bu da hatayı ekrana yazaktı.
 
-### Add an action
+### Aksiyon Ekleme
 
-The above JavaScript code won't work yet, because there isn't any action that can handle the `/Todo/AddItem` route. If you try it now, ASP.NET Core will return a `404 Not Found` error.
+Şu anda yukarıdaki Javascript kodu çalışmayacak çünkü `/Todo/AddItem` yolunda henüz bu talebi karşılacak bir aksiyonumuz bulunmamaktadır. Eğer şu anda denerseniz, ASP.NET Core `404 Not Found` hatası dönecektir.
 
-You'll need to create a new action called `AddItem` on the `TodoController`:
+`TodoController` içerisine `AddItem` adında yeni bir aksiyon oluşturun.
 
 ```csharp
 public async Task<IActionResult> AddItem(NewTodoItem newItem)
@@ -87,7 +86,8 @@ public async Task<IActionResult> AddItem(NewTodoItem newItem)
 }
 ```
 
-The method signature defines a `NewTodoItem` parameter, which is a new model that doesn't exist yet. You'll need to create it:
+Sizinde dikkat edeceğiniz üzere bu metod `NewTodoItem` isminde bir parametre beklemektedir. Şu anda bu model tanımlı değil. Öyleyse bunu tanımlayalım.
+
 
 **`Models/NewTodoItem.cs`**
 
@@ -104,25 +104,25 @@ namespace AspNetCoreTodo.Models
     }
 }
 ```
-
-This model definition (one property called `Title`) matches the data you're sending to the action with jQuery:
+Bu modelde sadece `Title` isminde yeni bir özelliklik tanımladık. Bu özelliğin ismi Jquery ile gönderdiğimiz talepte bulunan isimle aynıdır.
 
 ```javascript
 $.post('/Todo/AddItem', { title: newTitle }  // ...
 
-// A JSON object with one property:
+// Bir özellikli JSON Objesi:
 // {
-//   title: (whatever the user typed)
+//   title: tipi
 // }
 ```
 
-ASP.NET Core uses a process called **model binding** to match up the parameters submitted in the POST request to the model definition you created. If the parameter names match (ignoring things like case), the request data will be placed into the model.
+ASP.NET Core model ile bu gelen parametreyi eşlemek için **model bağlama** işlemini kullanır. Eğer isimleri aynı ise veri modelin içerisine alınır.
 
-After binding the request data to the model, ASP.NET Core also performs **model validation**. The `[Required]` attribute on the `Title` property informs the validator that the `Title` property should not be missing (blank). The validator won't throw an error if the model fails validation, but the validation status will be saved so you can check it in the controller.
+**Model Bağlama**nın yanı sıra ASP.NET Core ayrıca **model doğrulama** işlemini de yapar. Modelde yazdığımız `[Required]` özelliği `Title`'ın boş olamayacağı bilgisini verir. Bu doğrulama doğrudan hata vermyecektir fakat durumu kaydedilecektir. Ardından kontrolör içerisinden bu kontrol edilebilir.
 
-> Sidebar: It would have been possible to reuse the `TodoItem` model instead of creating the `NewTodoItem` model, but `TodoItem` contains properties that will never be submitted by the user (ID and done). It's cleaner to declare a new model that represents the exact set of properties that are relevant when adding a new item.
+> Aslında `TodoItem`'ı tekrar kullanabilirdik. En nihayetinde bu modelde de `Title` özelliği mevcuttu. Fakat bu modelde ön yüzden hiç bir zaman gönderilmeyecek(ID ve done) gibi özellikleri içermektedir. Dolayısıyla sadece gelecek değerleri tanımlayan bir model yaratmak daha yararlı olacaktır.
 
-Back to the `AddItem` action method on the `TodoController`: the first block checks whether the model passed the model validation process. It's customary to do this right at the beginning of the method:
+`AddItem` aksiyonuna bakacak olursanız ilk yaptığımız iş model doğrulamadır. Eğer bu parametre doğrulandıysa işleme devam edecek aksi halde `BadRequest(ModelState)` döndürecektir.
+
 
 ```csharp
 if (!ModelState.IsValid)
@@ -130,28 +130,26 @@ if (!ModelState.IsValid)
     return BadRequest(ModelState);
 }
 ```
-
-If the `ModelState` is invalid (because the required property is empty), the action will return 400 Bad Request along with the model state, which is automatically converted into an error message that tells the user what is wrong.
-
-Next, the controller calls into the service layer to do the actual database operation:
+Burada ModelState tam olarak neyin yanlış olduğunu açıklamasıyla birlikte dönmeye yarar. BadRequest ise `400 Bad Request` dönürür. Böylece hatanın tam olarak neyden kaynaklandığını anlayabilirsiniz.
 
 ```csharp
 var successful = await _todoItemService.AddItemAsync(newItem);
 if (!successful)
 {
-    return BadRequest(new { error = "Could not add item." });
+    return BadRequest(new { error = "Yeni madde eklenemedi" });
 }
 ```
+`AddItemAsync` metodu sadece `true` veya `false` döndürür. Herhangi bir nedenden dolayı hata aldıysa `400 Bad Request` ve bununla `error` özelliğini döner.
 
-The `AddItemAsync` method will return `true` or `false` depending on whether the item was successfully added to the database. If it fails for some reason, the action will return `400 Bad Request` along with an object that contains an `error` property.
+Eğer hiç bir hata almadıysa sonuçta `Ok()` yani `200 OK` döner.
 
-Finally, if everything completed without errors, the action returns `200 OK`.
 
-### Add a service method
+### Servis Metodu Ekleme
 
-If you're using a code editor that understands C#, you'll see red squiggely lines under `AddItemAsync` because the method doesn't exist yet. As a last step, you need to add the `AddItem` method to the service layer.
+Eğer C# anlayan bir kod editörü kullanıyorsanız `AddItemAsync` altında çizgi göreceksiniz. Daha bu servis metodunu yazmadığımızdan bu gayet normal.
 
-First, add it to the interface definition in `ITodoItemService`:
+Önce arayüze(`ITodoItemService`) bu tanımı ekleyin.
+
 
 ```csharp
 public interface ITodoItemService
@@ -162,7 +160,8 @@ public interface ITodoItemService
 }
 ```
 
-Then, the actual implementation in `TodoItemService`:
+Ardından gerçek uygulamasını `TodoItemService` içerisinde yapın:
+
 
 ```csharp
 public async Task<bool> AddItem(NewTodoItem newItem)
@@ -181,13 +180,12 @@ public async Task<bool> AddItem(NewTodoItem newItem)
     return saveResult == 1;
 }
 ```
+Bu metod yeni bir `TodoItem` ( veri tabanı modeli ) oluşturup `NewTodoItem` modelinden gelen `Title` alanını kopyalamaktadır. Sonrasında `SaveChangeAsync` ile bunu kalıcı olarak veri tabanına yazar.
 
-This method creates a new `TodoItem` (the model that represents the database entity) and copies the `Title` from the `NewTodoItem` model. Then, it adds it to the context and uses `SaveChangesAsync` to persist the entity in the database.
+> Yukarıdaki kod istediğimizi yapan bir yoldur. Bu şekilde farklı yollar da bulunmaktadır. Örneğin daha kompleks bir yapıyı düşünün, modelinizde birçok alan var ve bunu ekrana gösterip talep ediliğinde kaydetmek istiyorsunuz. Bunun için ASP.NET Core **tag helpers** adında modelden görüntü yaratabilecek özellikler barındırır. Bu konu ile ilgili örneklere https://docs.asp.net üzerinden erişebilirsiniz.
 
-> Sidebar: The above is just one way to build this functionality. If you want to display a separate page for adding a new item (for a complicated entity that contains a lot of properties, for example), you could create a new view that's bound to the model you need the user to provide values for. ASP.NET Core can render a form automatically for the properties of the model using a feature called **tag helpers**. You can find examples in the ASP.NET Core documentation at https://docs.asp.net.
+### Test Edin
 
-### Try it out
+Uygulamayı çalıştırın ve birkaç yeni yapılacak ekleyin. Girdiğiniz değerler veri tabanına kaydedildiğinden sayfa tekrardan yüklense de, tarayıcınızı kapatıp açsanız da verilerin aynı kaldığını göreceksiniz.
 
-Run the application and add some items to your to-do list with the form. Since the items are being stored in the database, they still be there even after you stop and start the application again.
-
-> As a further challenge, try adding a date picker using HTML and JavaScript, and let the user choose an (optional) date for the `DueAt` property. Then, use that date instead of always making new tasks that are due in 3 days.
+> Buna ek olarak tarih seçici kullanarak HTML ve Javascript ile kullanıcının `DueAt` özelliğini girmesini sağlayabilirsiniz. Eğer tarih boş ise son tarihi 3 gün sonraya atayabilirsiniz.

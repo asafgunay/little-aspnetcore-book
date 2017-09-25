@@ -1,24 +1,24 @@
-## Complete items with a checkbox
+## Maddeleri onay kutusu ile tamamlama
 
-Adding items to your to-do list is great, but eventually you'll need to get things done, too. In the `Views/Todo/Index.cshtml` view, a checkbox is rendered for each to-do item:
+Yapılacaklar listesine ekleme işini yaptınız çokta güzel oldu. Fakat bir de bu işin tamamlanması var. `Views/Todo/Index.cshtml` sayfasına göre her yapılacak için onay kutusunu da gösterilecek.
 
 ```html
 <input type="checkbox" name="@item.Id" value="true" class="done-checkbox">
 ```
+Her maddenin bir benzersiz ID( guid )'si olduğundan bunu bullanabiliriz. Bunu name alanında belirterek kontrolöre bunu paslayarak bu maddeyi güncelleyebiliriz.
 
-The item's ID (a guid) is saved in the `name` attribute of the element. You can use this ID to tell your ASP.NET Core code to update that entity in the database when the checkbox is checked.
+Akışın tamamı aşağıdaki gibi olacak
 
-This is what the whole flow will look like:
+* Kullanıcı onay kutusunu işaretler ve Javascript fonksiyonu tetiklenir.
 
-* The user checks the box, which triggers a JavaScript function
-* JavaScript is used to make an API call to an action on the controller
-* The action calls into the service layer to update the item in the database
-* A response is sent back to the JavaScript function to indicate the update was successful
-* The HTML on the page is updated
+* Javascript kontrolöre talep gönderir.
 
-### Add JavaScript code
+* Kontrolörde bulunan aksiyon servis katmanına çağrıda bulunarak bu maddenin güncellenmesini sağlar.
+* Güncelleme sonunda cevap Javascript fonksiyonuna geri gönderilir.
+* HTML kodu güncellenir.
 
-First, open `site.js` and add this code to the `$(document).ready` block:
+### Javascript Kodu Ekleme
+Önce `site.js`'yi açık ve `$(document).ready` bloğunun içerisini aşağıdaki gibi düzenleyin.
 
 **wwwroot/js/site.js**
 
@@ -27,15 +27,14 @@ $(document).ready(function() {
 
     // ...
 
-    // Wire up all of the checkboxes to run markCompleted()
+    // .done-checkbox sınıfına ait tüm onay kutuları aşağıdaki kodu çalıştırır.
     $('.done-checkbox').on('click', function(e) {
         markCompleted(e.target);
     });
 
 });
 ```
-
-Then, add the `markCompleted` function at the bottom of the file:
+Sonrasında sayfanın sonuna aşağıdaki kodu ekleyin:
 
 ```javascript
 function markCompleted(checkbox) {
@@ -47,10 +46,10 @@ function markCompleted(checkbox) {
     });
 }
 ```
+Bu kod daha önceki yapılacak oluşturma fonksiyonu ile aynı yapıya sahip. Fakat bu defa HTTP POST ile  `http://localhost:5000/Todo/MarkDone` adresine talep gönderip bunun içerisinde id olarak veri tabanından gelen ve onay kutusunun name kısmında belirttiğimiz `id`yi paslıyoruz.
 
-This code uses jQuery to send an HTTP POST request to `http://localhost:5000/Todo/MarkDone`. Included in the request will be one paramter, `id`, containing the item's ID (pulled from the `name` attribute).
+Herhangi bir onay kutusunu işaretleyip tarayıcınızın Network Araçlarına bakacak olursanız talebi aşağıdaki gibi görebilirsiniz.
 
-If you open the Network Tools in your web browser and click on a checkbox, you'll see a request like:
 
 ```
 POST http://localhost:5000/Todo/MarkDone
@@ -59,11 +58,11 @@ Content-Type: application/x-www-form-urlencoded
 id=<some guid>
 ```
 
-The success handler function passed to `$.post` uses jQuery to add a class to the table row that the checkbox sits in. With the row marked with the `done` class, a CSS rule in the page stylesheet will change the way the row looks.
+`$.post` başarılı bir şekilde döndüğünde onay kutusunun bulunduğu satır'a `done` sınıfı eklenir. Bu sınıfa has stil değişikliği uygulanmış olur.
 
-### Add an action to the controller
+### Kontrolöre aksiyon ekleme
 
-As you've probably guessed, you need to add a `MarkDone` action on the `TodoController`:
+Sizin de tahmin edeceğiniz gibi, `TodoController` içerisine `MarkDone` aksiyonunu eklemeliyiz.
 
 ```csharp
 public async Task<IActionResult> MarkDone(Guid id)
@@ -77,37 +76,33 @@ public async Task<IActionResult> MarkDone(Guid id)
     return Ok();
 }
 ```
+Şimdi bu adımların üzerinden geçelim. Öncelikle `id` isminde bir `Guid` argümanı ekledik. Yani bu metodun Guid beklediğini bildirdik. Daha önce yazdığımız `AddItem` aksiyonunda `NewTodoItem` modeli kullanmıştık. Fakat bu defa beklentimiz sadece `id` olduğundan böyle bir sınıf yapmaya gerek yok. ASP.NET Core gelen değeri **guid** olarak ayrıştırmaya çalışacak.
 
-Let's step through each piece of this action method. First, the method accepts a `Guid` parameter called `id` in the method signature. Unlike the `AddItem` action, which used a model (the `NewTodoItem` model) and model binding/validation, the `id` parameter is very simple. If the incoming request includes a parameter called `id`, ASP.NET Core will try to parse it as a guid.
-
-There's no `ModelState` to check for validity, but you can still check to make sure the guid was valid. If for some reason the `id` parameter in the request was missing couldn't be parsed as a guid, it will have a value of `Guid.Empty`. If that's the case, the action can return early:
-
+Herhangi bir model oluşturmadığımızdan ve doğruluk tanımını ` [Required]` yapmadığımızdan dolayı metodumuz içerisinde `ModelState` kelimesini kullanamıyoruz. Fakat bunun yerine `Guid.Empty` gibi bir kontrol ile boş olup olmadığını kontrol edebiliriz. Eğer boş ise BadRequest yani `400 Bad Request` dönderebiliriz.
 ```csharp
 if (id == Guid.Empty) return BadRequest();
 ```
 
-The `BadRequest()` method is a helper method that simply returns the HTTP status code `400 Bad Request`.
-
-Next, the controller needs to call down into the service to update the database. This will be handled by a new method called `MarkDoneAsync` on the `ITodoItemService`, which will return true or false depending on if the update succeeded:
+Sırada kontrolörün servisi veri tabanı güncellemesi için çağırması kaldı. Bu yeni bir metod olan `MarkDoneAsync` ile `ITodoItemService` üzerinde yapılmakta. Sonuç olarak eğer veri tabanı güncellemesi başarılı olursa true aksi halde false değeri döndürecek.
 
 ```csharp
 var successful = await _todoItemService.MarkDoneAsync(id);
 if (!successful) return BadRequest();
 ```
 
-Finally, if everything looks good, the `Ok()` method is used to return status code `200 OK`. More complex APIs might return JSON or other data as well, but for now returning a status code is all you need.
+Sonuç olarak herşey düzgün bir şekilde çalıştıysa javascript'e `Ok()` yani `200 OK` değerini döndüreceğiz. Daha kompleks bir yapı ile JSON yapısında farklı veriler göndermekte mümkün fakat şimdilik buna ihtiyacımız yok. 
 
-### Add a service method
+### Servis Metodu Ekleme
 
-First, add `MarkDoneAsync` to the interface definition:
+İlk olarak `MarkDoneAsync`'i arayüze ekleyin:
+
 
 **`Services/ITodoItemService.cs`**
 
 ```csharp
 Task<bool> MarkDoneAsync(Guid id);
 ```
-
-Then, add the concrete implementation to the `TodoItemService`:
+Sonra bunun uygulamasını `TodoItemService` üzerinde şu şekilde tamamlayın:
 
 **`Services/TodoItemService.cs`**
 
@@ -127,18 +122,18 @@ public async Task<bool> MarkDoneAsync(Guid id)
 }
 ```
 
-This method uses Entity Framework Core and `Where` to find an entity by ID in the database. The `SingleOrDefaultAsync` method will return either the item (if it exists) or `null` if the ID was bogus. If it didn't exist, the code can return early.
-
-Once you're sure that `item` isn't null, it's a simple matter of setting the `IsDone` property:
+Bu metod Entity Framework Core'un `Where` komutunu kullanarak ID kolonuna göre arama yapmaktadır. `SingleOrDefaultAsync` metodu bulduğu satırı item'a atar eğer bulamaz ise bu durumda item `null` olur. Bunun kontrolünü yaptıktan sonra doğrudan false dönebiliriz. 
+Eğer `item` boş değilse bunun sadece `IsDone` özelliğini ayarlayarak güncelleyebiliriz.
 
 ```csharp
 item.IsDone = true;
 ```
 
-Changing the property only affects the local copy of the item until `SaveChangesAsync` is called to persist your changes back to the database. `SaveChangesAsync` returns an integer that reflects how many entities were updated during the save operation. In this case, it'll either be 1 (the item was updated) or 0 (something went wrong).
+`SaveChangesAsync` metodu uygulanana kadar yaptığımız değişiklikler sadece yerelde değişti.`SaveChangesAsync` çalıştıktan sonra kaç satırı güncellediyse onu dönderir. Bu durumda ya 1 tane gönderecek veya 0, ama 0 olursa bir yanlışlık olduğunu söyleyebileceğiz. Eğer 1 ise `true` aksi halde `false` döndereceğiz.
 
-### Try it out
+### Test Edin
 
-Run the application and try checking some items off the list. Refresh the page and they'll disappear completely, because of the `Where` filter in the `GetIncompleteItemsAsync` method.
+Uygulamayı çalıştırıp bazı onay kutularını işaretleyin. Sayfayı yenilediğinizde bu maddelerin yapılacaklar listesinden silindiğini göreceksiniz. Bunun nedeni `GetIncompleteItemsAsync` te bulunan `Where` filtresidir.
 
-Right now, the application contains a single, shared to-do list. It'd be even more useful if it kept track of individual to-do lists for each user. In the next chapter, you'll use ASP.NET Core Identity to add security and authentication features to the project.
+Şu anda, uygulama herkesçe görülebilen yapılacaklar listesi durumundadır. Eğer kişiye özel bir liste olsa daha kullanışlı olabilir. Bir sonraki bölümde, ASP.NET Core Identity kullanarak güvenlik ve kimlik denetleme özelliklerini entegre edeceğiz.
+
