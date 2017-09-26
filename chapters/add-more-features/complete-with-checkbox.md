@@ -131,7 +131,7 @@ item.IsDone = true;
 
 `SaveChangesAsync` metodu uygulanana kadar yaptığımız değişiklikler sadece yerelde değişti.`SaveChangesAsync` çalıştıktan sonra kaç satırı güncellediyse onu dönderir. Bu durumda ya 1 tane gönderecek veya 0, ama 0 olursa bir yanlışlık olduğunu söyleyebileceğiz. Eğer 1 ise `true` aksi halde `false` döndereceğiz.
 
-### Test Edin
+### Test
 
 Uygulamayı çalıştırıp bazı onay kutularını işaretleyin. Sayfayı yenilediğinizde bu maddelerin yapılacaklar listesinden silindiğini göreceksiniz. Bunun nedeni `GetIncompleteItemsAsync` te bulunan `Where` filtresidir.
 

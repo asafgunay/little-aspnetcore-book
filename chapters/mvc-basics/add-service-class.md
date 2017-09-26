@@ -30,7 +30,7 @@ namespace AspNetCoreTodo.Services
 
 Dikkat ederseniz dosyanın isimuzayı(namespace)  `AspNetCoreTodo.Services`. İsimuzayı .NET kodlarının organize olmasına yarar. Burada gördüğünüz isimuzayı klasör yapısını takip etmiştir.
 
-Bu dosya `AspNetCoreTodo.Services` namespaceine sahip ve `TodoItem` sınıfını talep ettiğinden dolayı `AspNetCoreTodo.Models` isimuzayını bu dosyaya `using` cümlesi kullanarak eklememiz gerekmektedir. Aksi halde aşağıdaki gibi bir hata göreceksiniz.
+Bu dosya `AspNetCoreTodo.Services` isimuzayına sahip ve `TodoItem` sınıfını talep ettiğinden dolayı `AspNetCoreTodo.Models` isimuzayını bu dosyaya `using` cümlesi kullanarak eklememiz gerekmektedir. Aksi halde aşağıdaki gibi bir hata göreceksiniz.
 
 ```
 The type or namespace name 'TodoItem' could not be found (are you missing a using directive or an assembly reference?)

@@ -19,7 +19,7 @@ public async Task<IActionResult> Index()
 }
 ```
 
-## Test Edin
+## Test 
 Eğer Visual Studio Code veya Visual Studio kullanıyorsanız F5 Tuşu ile projenizi çalıştırabilirsiniz. Bunun yerine komut satırı veya terminalden `dotnet run` komutunu da kullanabilirsiniz elbette. Eğer kodunuzda hata yoksa sunucunuz varsayılan port olan `5000` portundan çalışmaya başlayacaktır.
 
 Eğer tarayıcınız otomatik olarak açılmadıysa `http://localhost:5000/todo' adresine giderek, hazırladığımız sahte(fake) veri tabanı katmanından verileri çektiğini ve ekranda gösterdiğini göreceksiniz.

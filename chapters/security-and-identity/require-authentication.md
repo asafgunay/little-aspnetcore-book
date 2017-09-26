@@ -1,4 +1,4 @@
-## Require authentication
+## Kimlik Kontrolü
 
 Often you'll want to require the user to log in before they can access certain parts of your application. For example, it makes sense to show the home page to everyone (whether you're logged in or not), but only show your to-do list after you've logged in.
 
