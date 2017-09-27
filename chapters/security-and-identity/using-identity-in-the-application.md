@@ -1,8 +1,8 @@
-## Using identity in the application
+## Uygulama İçerisinde Kişiye Has Özellikleri Kullanma
 
-The to-do list items themselves are still shared between all users, because the to-do entities aren't tied to a particular user. Now that the `[Authorize]` attribute ensures that you must be logged in to see the to-do view, you can filter the database query based on who is logged in.
+Yapılacaklar listesinde hala kullanıcı bazında bir ayrım bulunmamaktadır.`[Authorize]` özelliği sayesinde kullanıcı giriş yaptıysa tüm listeyi görebiliri. Bunun ile birlikte giren kullanıcıya göre bu filtreyi genişletmek gerekmekte.
 
-First, inject a `UserManager<ApplicationUser>` into the `TodoController`:
+Öncelikle `UserManager<Applicationuser>` 'ı `TodoController`a enjekte edin.
 
 **`Controllers/TodoController.cs`**
 
@@ -23,14 +23,12 @@ public class TodoController : Controller
     // ...
 }
 ```
-
-You'll need to add a new `using` statement at the top:
+Üst taraftaki `using` cümlesine dikkat edin.
 
 ```csharp
 using Microsoft.AspNetCore.Identity;
 ```
-
-The `UserManager` class is part of ASP.NET Core Identity. You can use it to look up the current user in the `Index` action:
+`UserManager` sınıfı ASP.NET Core Kimlik'e ait bir sınıftır. Bu sınıf sayesinde kullanıcıya ait bilgileri alabilirsiniz.
 
 ```csharp
 public async Task<IActionResult> Index()
@@ -48,22 +46,21 @@ public async Task<IActionResult> Index()
     return View(model);
 }
 ```
+Aksiyon içerisinden `User` özelliğini kullanarak `UserManager` vasıtası ile kullanıcıların özelliklerine erişebilirsiniz.
 
-The new code at the top of the action method uses the `UserManager` to get the current user from the `User` property available in the action:
 
 ```csharp
 var currentUser = await _userManager.GetUserAsync(User);
 ```
+Şimdi sorabilirsiniz:"Madem `User` objemiz zaten aksiyondan erişilebilir durumda, peki neden `UserManager`'a çağrı yapmamız gerekiyor". Burada bulunan `User` objesinin içerisinde çok basit veriler tutulur.`UserManager` ise bu kullanıcıya ait tim bilgilerin veri tabanından getirilmesini sağlar.
 
-If there is a logged-in user, the `User` property contains a lightweight object with some (but not all) of the user's information. The `UserManager` uses this to look up the full user details in the database via the `GetUserAsync`.
-
-The value of `currentUser` should never be null, because the `[Authorize]` attribute is present on the controller. However, it's a good idea to do a sanity check, just in case. You can use the `Challenge()` method to force the user to log in again if their information is missing:
+`currentUser` değeri hiç bir zaman null olmamalıdır. Zaten daha önce `[Authorize]` ile kontrolörü ile giriş yapılmadan kullanılamayacağını belirtmiştiniz. Fakat yine de eğer kullanıcı giriş yapmadıysa veya her hangi bir şekilde o an bir problem olduysa onu giriş sayfasına yönlendirmek iyi bir pratiktir. Bunun için `Challenge()` metodunu kullanabilirsiniz. 
 
 ```csharp
 if (currentUser == null) return Challenge();
 ```
+Artık `ApplicationUser` parametresini `GetIncompleteItemsAsync`'e gönderdiğinize göre, `ITodoItemService` arayüzünde de değişiklik yapmalısınız.
 
-Since you're now passing an `ApplicationUser` parameter to `GetIncompleteItemsAsync`, you'll need to update the `ITodoItemService` interface:
 
 **`Services/ITodoItemService.cs`**
 
@@ -75,36 +72,34 @@ public interface ITodoItemService
     // ...
 }
 ```
+Sıradaki işlem veri tabanını güncelleyerek sadece giriş yapan kullanıcıya has verileri getirmektir.
 
-The next step is to update the database query and show only items owned by the current user.
+### Veri tabanını güncelleme
 
-### Update the database
-
-You'll need to add a new property to the `TodoItem` entity model so each item can reference the user that owns it:
+`TodoItem` modeline yeni bir özellik ekleyerek kullanıcıların bilgilerinin tutulmasını sağlamalısınız.
 
 ```csharp
 public string OwnerId { get; set; }
 ```
+Tabi şu anda sadece modelde değişiklik yaptınız ve bunu henüz uygulamadınız. Bundan dolayı daha önce yaptığımız gibi **göç** ettirmeniz gerekmekte. Bunun için terminalde veya komut satırında `dotnet ef` komutunu kullanarak aşağıdaki işlemi yapın.
 
-Since you updated the entity model used by the database context, you also need to migrate the database. Create a new migration using `dotnet ef` in the terminal:
 
 ```
 dotnet ef migrations add AddItemOwnerId
 ```
 
-This creates a new migration called `AddItemOwner` which will add a new column to the `Items` table, mirroring the change you made to the `TodoItem` entity model.
+Bu yeni bir **göç** oluşturarak bunun adını `AddItemOwner` verir. Modelde yaptığımız değişiklikler burada da görülebilir. 
 
-> Note: You'll need to manually tweak the migration file if you're using SQLite as your database. See the *Create a migration* section in the *Use a database* chapter for more details.
-
-Use `dotnet ef` again to apply it to the database:
+> Eğer SQLite kullanıyorsanız bu **göç**'ü otomatik yapamazsınız. Bunun için **Migration Oluşturma** bölümüne bakabilirsiniz. Tekrar `dotnet ef` komutu ile bu **göç**ü uygulayabilirsiniz.
 
 ```
 dotnet ef database update
 ```
 
-### Update the service class
+### Servis sınıfını güncelleme
 
-With the database and the database context updated, you can now update the `GetIncompleteItemsAsync` method in the `TodoItemService` and add another clause to the `Where` statement:
+Veri tabanı ve veri tabanı konteksi güncellendi, artık `TodoItemService` içerisinde bulunan `GetIncompleteItemsAsync` metodunu değiştirebilir ve `Where` sorgusu ekleyebilirsiniz. 
+
 
 **`Services/TodoItemService.cs`**
 
@@ -116,14 +111,14 @@ public async Task<IEnumerable<TodoItem>> GetIncompleteItemsAsync(ApplicationUser
         .ToArrayAsync();
 }
 ```
+Yeni bir kullanıcı oluşturur ve giriş yaparsanız, yapılacaklar listesini boş göreceksiniz. Malesef yeni bir yapılacak eklediğinizde de bu değişmeyecek, çünkü yeni yapılacak ekleme olayının içerisinde kullanıcı bilgilerini kaydetme işlemini yapmanız henüz.
 
-If you run the application and register or log in, you'll see an empty to-do list once again. Unfortunately, any items you try to add disappear into the ether, because you haven't updated the Add Item operation to save the current user to new items.
+### Yeni Yapılacak Olayı Güncellemesi ve Tamamlandı Operasyonu
 
-### Update the Add Item and Mark Done operations
+`UserManager` kullanarak giriş yapmış kullanıcının bilgilerini `AddItem` ve `MarkDone` aksiyonları içerisine paslayabilirsiniz. Bunu daha önce `Index` aksiyonunda yapmıştınız. Buradaki tek fark bu metodların kullanıcıyı eğer giriş yapmamışsa giriş ekranına yönlendirmek yerine `401 Unauthorized` döndürmesidir.
 
-You'll need to use the `UserManager` to get the current user in the `AddItem` and `MarkDone` action methods, just like you did in `Index`. The only difference is that these methods will return a `401 Unauthorized` response to the frontend code, instead of challenging and redirecting the user to the login page.
+`TodoController` içerisini aşağıdaki gibi güncelleyin.
 
-Here are both updated methods in the `TodoController`:
 
 ```csharp
 public async Task<IActionResult> AddItem(NewTodoItem newItem)
@@ -158,8 +153,7 @@ public async Task<IActionResult> MarkDone(Guid id)
     return Ok();
 }
 ```
-
-Both service methods must now accept an `ApplicationUser` parameter. Update the interface definition in `ITodoItemService`:
+İki serviste `ApplicationUser` parametresini kabul etmeli. `ITodoItemService` içerisini aşağıdaki gibi güncelleyin.
 
 ```csharp
 Task<bool> AddItemAsync(NewTodoItem newItem, ApplicationUser user);
@@ -167,9 +161,8 @@ Task<bool> AddItemAsync(NewTodoItem newItem, ApplicationUser user);
 Task<bool> MarkDoneAsync(Guid id, ApplicationUser user);
 ```
 
-And finally, update the service method implementations in the `TodoItemService`.
-
-For the `AddItemAsync` method, set the `Owner` property when you construct a `new TodoItem`:
+Son olarak `TodoItemService` içerisinde bulunan servis metodunu güncelleyin.
+`AddItemAsync` metodu için `Owner` özelliğini yeti `TodoItem` oluştururken ayarlayın.
 
 ```csharp
 public async Task<bool> AddItemAsync(NewTodoItem newItem, ApplicationUser user)
@@ -186,8 +179,7 @@ public async Task<bool> AddItemAsync(NewTodoItem newItem, ApplicationUser user)
     // ...
 }
 ```
-
-The `Where` clause in the `MarkDoneAsync` method also needs to check for the user's ID, so a rogue user can't complete someone else's items by guessing their IDs:
+`MarkDoneAsync` metodu içerisinde kullanıcıyı kontrol etmelisiniz. Böylece sadece yapılacak ID'si ile güncelleme yapılamayacaktır.
 
 ```csharp
 public async Task<bool> MarkDoneAsync(Guid id, ApplicationUser user)
@@ -199,5 +191,4 @@ public async Task<bool> MarkDoneAsync(Guid id, ApplicationUser user)
     // ...
 }
 ```
-
-All done! Try using the application with two different user accounts. The to-do items stay private for each account.
+Bunu da tamamladık. Bundan sonra her kullanıcı kendi adına yapılacak ekleyebilecek ve başkası bunu göremeyecek veya tamamlandı olarak belirtemeyecek.
