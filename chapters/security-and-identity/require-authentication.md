@@ -1,8 +1,8 @@
-## Kimlik Kontrolü
+## Kimlik Doğrulama
+Çoğu uygulamada kullanıcı girişi mevcuttur. Kullanıcı giriş yaparak kendine ait bölümleri gezebilir veya işlem yapabilir. Ana sayfayı herkese göstermek mantıklı olabilir, fakat yapılacaklar listesini sadece giriş yapmış olan kişilerin görmesi gerekmekte.
 
-Often you'll want to require the user to log in before they can access certain parts of your application. For example, it makes sense to show the home page to everyone (whether you're logged in or not), but only show your to-do list after you've logged in.
+ASP.NET Core `[Authorize]` özelliğini kullanarak kullanıcının bazı aksiyon veya kontrolörün tamamına giriş kontrolü ekleyebiliriz. Aşağıdaki kimlik kontrolü bu kontrolör içerisindeki tüm aksiyonlara uygulanır.
 
-You can use the `[Authorize]` attribute in ASP.NET Core to require a logged-in user for a particular action, or an entire controller. To require authentication for all actions of the `TodoController`, add the attribute above the first line of the controller:
 
 ```csharp
 [Authorize]
@@ -12,13 +12,11 @@ public class TodoController : Controller
 }
 ```
 
-Add this `using` statement at the top of the file:
-
+Aşağıdaki `using` cümlesini de sınıfınız üzt tarafına yapıştırın.
 ```csharp
 using Microsoft.AspNetCore.Authorization;
 ```
+Uygulamanızı çalıştırıp kullanıcı girişi yapmadan `/todo` sayfasına gidin. Giriş sayfasına otomatik olarak yönlendirildiğinizi göreceksiniz.
 
-Try running the application and accessing `/todo` without being logged in. You'll be redirected to the login page automatically.
-
-> Despite the name of the attribute, we are really doing an authentication check here, not an authorization check. Sorry to be confusing.
+> Doğrulama ve Yetki birbiri ile karıştırılan özellikler. Burada doğrulama yapıyorsunuz. Kullanıcının neye yetkisi olduğunu belirtmedik. Yani sadece giriş yapıp yapmadığı bilgisine bakıyorsunuz.
 

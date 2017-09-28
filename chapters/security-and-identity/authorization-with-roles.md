@@ -1,10 +1,10 @@
-## Authorization with roles
+## Role göre yetkilendirm
 
-Roles are a common approach to handling authorization and permissions in a web application. For example, you might have an Administrator role that allows admins to see and manage all the users registered for your app, while normal users can only see their own information.
+Yetki ve izin mekanizmasını genel olarak Roller vasıtasıyla gerçekleştirilmektedir. Örneğin Admin roünde bir kişi tüm kullanıcıları görüp bu kullanıcılar üzerinde işlem yapabilirken. Normal kullanıcı rolune sahip birisi sadece kendine ait bilgileri görebilir.
 
-### Add a Manage Users page
+### Yönetici Ekleme
 
-First, create a new controller:
+Önce aşağıdaki gibi bir kontrolör oluşturun
 
 **`Controllers/ManageUsersController.cs`**
 
@@ -49,10 +49,9 @@ namespace AspNetCoreTodo.Controllers
     }
 }
 ```
+Dikkat ettiyseniz `[Authorize]` bölümünde Rol belirtilmiş. Bu kullanıcının hem giriş yaptığını hem de `Administrator` rolüne sahip olduğunu garanti eder. Aksi halde kullanıcı bu kontrolöre giriş yapamaz.
 
-Setting the `Roles` property on the `[Authorize]` attribute will ensure that the user must be logged in **and** assigned the `Administrator` role in order to view the page.
-
-Next, create a view model:
+Şimdi bir Görüntü Modeli oluşturun
 
 **`Models/ManageUsersViewModel.cs`**
 
@@ -71,8 +70,7 @@ namespace AspNetCoreTodo
 }
 ```
 
-Finally, create a view for the Index action:
-
+Son olarak Görüntüyü oluşturun 
 **`Views/ManageUsers/Index.cshtml`**
 
 ```html
@@ -123,18 +121,19 @@ Finally, create a view for the Index action:
 </table>
 ```
 
-Start up the application and try to access the `/ManageUsers` route while logged in as a normal user. You'll see this access denied page:
-
+Uygulamayı başlatın, normal kullanıcı olarak giriş yapın ve `/ManageUsers` sayfasına gidin. Aşağıdaki gibi bir Giriş Engellendi sayfasını göreceksiniz.
 ![Access denied error](access-denied.png)
 
-That's because users aren't assigned the `Administrator` role automatically.
+Bu sayfayı görmenizin nedeni web uygulamanıza `Administrator` olarak giriş yapmadığınızdan dolayıdır.
 
 
-### Create a test administrator account
+### Test Admin Hesabı Oluşturma
 
-For obvious security reasons, there isn't a checkbox on the registration page that makes it easy for anyone to create an administrator account. Instead, you can write some code in the `Startup` class that will create a test admin account the first time the application starts up.
 
-Add this code to the `if (env.IsDevelopment())` branch of the `Configure` method:
+Kullanıcılara kayıt olurken bir onay kutusu ile admin olmak istiyormusunuz demek çokta mantıklı değidir. Bunun yerine `Startup` sınıfına yazacağımız kod ile test admin hesabı oluşturmak mümkündür. `Startup` sistem ayağa kalkarken çalışacak ve böylece bir admin hesabı uygulama başladığında kullanımınıza hazır hale gelecektir.
+
+Aşağıdaki değişikliği `Configure` metodu içinde yer alan `if(env.IsDevelopment())` kontrolünün içerisine yazın.
+
 
 **`Startup.cs`**
 
@@ -148,8 +147,7 @@ if (env.IsDevelopment())
     EnsureTestAdminAsync(userManager).Wait();
 }
 ```
-
-The `EnsureRolesAsync` and `EnsureTestAdminAsync` methods will need access to the `RoleManager` and `UserManager` services. You can inject them into the `Configure` method, just like you inject any service into your controllers:
+`EnsureRoleAsync` ve `EnsureTestAdminAsync` metodları `RoleManager` ve `UserManager` servislerine ihtiyaç duyar. Bundan dolayı bu servisleri `Startup` sınıfına enjekte etmemiz gerekmekte. Bunun için aşağıdaki değişikliği yapın
 
 ```csharp
 public void Configure(IApplicationBuilder app,
@@ -161,7 +159,8 @@ public void Configure(IApplicationBuilder app,
 }
 ```
 
-Add the two new methods below the `Configure` method. First, the `EnsureRolesAsync` method:
+Aşağıdaki iki metodu `Configure` metodunun altına yapıştırın
+Önce `EnsureRolesAsync` metodu
 
 ```csharp
 private static async Task EnsureRolesAsync(RoleManager<IdentityRole> roleManager)
@@ -173,8 +172,8 @@ private static async Task EnsureRolesAsync(RoleManager<IdentityRole> roleManager
     await roleManager.CreateAsync(new IdentityRole(Constants.AdministratorRole));
 }
 ```
+Bu metod veri tabanında `Administrator` rolünün olup olmadığını kontrol eder. Eğer yoksa oluşturur. Her yerde `Administrator`'ü elle yazmaktansa `Constants` adında yeni bir sınıf oluşturup onun içerisine sabit değerlerimizi yazabiliriz.
 
-This method checks to see if an `Administrator` role exists in the database. If not, it creates one. Instead of repeatedly typing the string `"Administrator"`, create a small class called `Constants` to hold the value:
 
 **`Constants.cs`**
 
@@ -187,10 +186,9 @@ namespace AspNetCoreTodo
     }
 }
 ```
+> Daha önce oluşturduğumuz `ManageUsersController` kontrolörünü de bu sabit ile değiştirebilirsiniz.
 
-> Feel free to update the `ManageUsersController` you created before to use this constant value as well.
-
-Next, write the `EnsureTestAdminAsync` method:
+`EnsureTestAdminAsync` metodunu yazın
 
 **`Startup.cs`**
 
@@ -208,20 +206,19 @@ private static async Task EnsureTestAdminAsync(UserManager<ApplicationUser> user
     await userManager.AddToRoleAsync(testAdmin, Constants.AdministratorRole);
 }
 ```
+Eğer `admin@todo.local` isminde bir kullanıcı yoksa, bu metod yeni bir kullanıcı oluşturacak ve geçici şifre atayacak. Giriş yaptıktan sonra şifreyi daha güvenli bir şifre ile değiştirmeniz gerekmekte.
 
-If there isn't already a user with the username `admin@todo.local` in the database, this method will create one and assign a temporary password. After you log in for the first time, you should change the account's password to something secure.
+> Bu iki metodda asenkron ve `Task` döndürdüklerinden bunlar `Configure` içerisinde `wait` ile kullanılmalılar. Aksi halde `Configure` metodu çalışmaya devam eder ve bu değişiklikleri atlar. Bunun için normalde `await` kullanmamız gerekmekte. Fakat teknik nedenlerden dolayı `Configure` içerisinde `await` kelimesini kullanamıyoruz. Bundan dolayı başka bir yerde `await` kullanmamız gerekmekte.
 
-> Because these two methods are asynchronous and return a `Task`, the `Wait` method must be used in `Configure` to make sure they finish before `Configure` moves on. You'd normally use `await` for this, but for technical reasons you can't use `await` in `Configure`. This is a rare exception - you should use `await` everywhere else!
+Uygulamayı çalıştırdığınızda `admin@todo.local` hesabı oluşturulacak ve `Administrator` rolü atanacak. Bu kullanıcı ile giriş yapaıp `http://localhost:5000/ManageUsers` sayfasına gidin.Uygulamaya kayıt olmuş tüm kullanıcıların olduğu listeyi göreceksiniz.
 
-When you start the application next, the `admin@todo.local` account will be created and assigned the `Administrator` role. Try logging in with this account, and navigating to `http://localhost:5000/ManageUsers`. You'll see a list of all users registered for the application.
+> Bunun yanında kendiniz yeni bir özellik ekleyebilirsiniz. Örneğin bir buton ile sadece Admin'in kullanıcıları silebileceği değişikliği yapabilirsiniz.
 
-> As an extra challenge, try adding more administration features to this page. For example, you could add a button that gives an administrator the ability to delete a user account.
+### Görüntü sayfasında kullanıcı kontrolü
 
-### Check for authorization in a view
+`[Authorize]` özelliği ile kontrolör veya aksiyonda kullanıcı kontrolü yapmak mümkün, fakat ya Görüntü dosyasına buna ihtiyacımız olursa? Örneğin "Kullanıcı Yönetimi" bağlantısı menüde olsa çok işimize yarar. Fakat bu linkin sadece Admin kullanıcısına görünmesi gerekmekte.
 
-The `[Authorize]` attribute makes it easy to perform an authorization check in a controller or action method, but what if you need to check authorization in a view? For example, it would be nice to display a "Manage users" link in the navigation bar if the logged-in user is an administrator.
-
-You can inject the `UserManager` directly into a view to do these types of authorization checks. To keep your views clean and organized, create a new partial view that will add an item to the navbar in the layout:
+`UserManager`'i doğrudan Görüntü dosyasına enjekte etmek mümkün, bunun vasıtasıyla istediğiniz kontrolleri yapabiliriz. Görüntü dosyamızı daha temiz tutmak için yeni bir kısmi görüntü dosyası ( partial view ) oluşturun. Bu kısmi görüntü içerisinde kontrollerimizi yapacağız ve eğer giren kullancıcı `Administrator` rolüne sahipse "Kullanıcı Yönetimi" bağlantısını görebilir. 
 
 **`Views/Shared/_AdminActionsPartial.cshtml`**
 
@@ -246,12 +243,12 @@ You can inject the `UserManager` directly into a view to do these types of autho
     }
 }
 ```
+**Kısmi Görüntü** küçük bir görüntü parçasıdır, genelde diğer **Görüntü** dosyalarına gömülürler. Bundan dolayı belirleyici olarak başlangıçlarına `_` işareti koyularak **kısmi** olduğu belirtilir. Tabi bu zorunlu değildir.
 
-A **partial view** is a small piece of a view that gets embedded into another view. It's common to name partial views starting with an `_` underscore, but it's not necessary.
+Bu kısmi görüntü önce `SignInManager` ile kullanıcının giriş yapıp yapmadığını kontrol eder. Eğer giriş yapmamışlarsa, kodun geri kalanının önemi yoktur. Eğer giriş yapmış kullanıcı varsa, `UserManager` ile `IsInRoleAsync` metodu çağırılarak bu kullanıcının diğer özelliklerine bakılır. Eğer bu kontrol başarılı ise navigasyona "Kullanıcı Yönetimi" eklenir.
 
-This partial view first uses the `SignInManager` to quickly determine whether the user is logged in. If they aren't, the rest of the view code can be skipped. If there *is* a logged-in user, the `UserManager` is used to look up their details and perform an authorization check with `IsInRoleAsync`. If all checks succeed, a navbar item is rendered.
+Tabi bu kısmi görüntünün ana görüntüye gömülmesi gerekmekte. Bunun için `_Layout.cshtml` içerisine gidin ve aşağıdaki değişikliği yapın.
 
-To include this partial in the main layout, edit `_Layout.cshtml` and add it in the navbar section:
 
 **`Views/Shared/_Layout.cshtml`**
 
@@ -266,13 +263,12 @@ To include this partial in the main layout, edit `_Layout.cshtml` and add it in 
     @await Html.PartialAsync("_AdminActionsPartial")
 </div>
 ```
-
-When you log in with an administrator account, you'll now see a new item on the top right:
+Admin kullanıcısı ile girdiğinizde sağ üst tarafta aşağıdaki gibi "Kullanıcı Yönetimi" (Manage Users) bağlantısını göreceksiniz.
 
 ![Manage Users link](manage-users.png)
 
-## Wrap up
+## Özet
 
-ASP.NET Core Identity is a powerful security and identity system that helps you add authentication and authorization checks, and makes it easy to integrate with external identity providers. The `dotnet new` templates give you pre-built views and controllers that handle common scenarios like login and registration so you can get up and running quickly.
+ASP.NET Core oldukça güçlü bir güvenlik ve kimlik sistemidir. Bu sistem ile *kimlik doğrulaması* ve *izin* kontrolleri yapabilir. Buna harici kimlik servis sağlayıcılar(facebook, google, twitter) ekleyebilirsiniz. `dotnet new` şablonu size kullanıcı girişi ve kayıdı gibi genel senaryoları içeren projeyi oluşturur. 
 
-There's much more that ASP.NET Core Identity can do. You can learn more in the documentation and examples available at https://docs.asp.net.
+ASP.NET Core Kimlik ile ilgili daha detaylı bilgiyi https://docs.asp.net adresinde bulabilirsiniz.
