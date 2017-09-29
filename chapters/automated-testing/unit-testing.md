@@ -1,18 +1,18 @@
-## Unit testing
+## Unit Testi
 
-Unit tests are small, quick tests that check the behavior of a single method or chunk of logic. Instead of testing a whole group of classes, or the entire system (as integration tests do), unit tests rely on **mocking** or replacing the objects the method-under-test depends on.
+Unit testi tek metodun veya kısa bir mantıksal akışı test etmek için kullanılır. Sistemin tamamını test etmek yerine, unit testi **sahte** veriler kullanarak gerçek metodun yapması gereken işi doğru yapıp yapmadığını test eder.
 
-For example, the `TodoController` has two dependencies: an `ITodoItemService` and the `UserManager`. The `TodoItemService`, in turn, depends on the `ApplicationDbContext`. (The idea that you can draw a line from `TodoController` -> `TodoItemService` -> `ApplicationDbContext` is called a *dependency graph*).
+Örneğin `TodoController`'in iki bağımlılığı vardır. Bunlar : `ItodoItemService` ve `UserManager`'dır. `TodoItemService` ise `ApplicationDbContext`'e bağımlıdır. ( Şu şekilde **bağlımlılık grafiği**ni çizebiliriz. `TodoController`->`TodoItemService`->`ApplicationDbContext`)
 
-When the application runs normally, the ASP.NET Core dependency injection system injects each of those objects into the dependency graph when the `TodoController` or the `TodoItemService` is created.
+Normalde ASP.Core bağımlılık enjeksiyon sistemi `TodoController` veya `TodoItemService` oluşturulduğundayukarıda bulunan tüm **bağımlılık grafiğini** enjekte eder.
 
-When you write a unit test, on the other hand, you'll manually inject mock or test-only versions of those dependencies. This means you can isolate just the logic in the class or method you are testing. (If you're testing a service, you don't want to also be accidentally writing to your database!)
+Fakat unit tesi yazarken bu enjeksiyonları elle yapmak gerekmektedir. Bu da mantığı sınıf veya method bazında izole edebileceğiniz anlamına gelir. (Test yazarken yanlışlıkla veri tabanına yazmak istemezsiniz.)
 
-### Create a test project
+### Test Projesi Oluşturma
 
-It's a common practice to create a separate project for your tests, to keep things clean and organized. The new test project should live in a directory that's next to (not inside) your main project's directory.
+Test için genelde ayrı bir proje oluşturulur. Yeni test projesi eskiden oluşturduğunuz ana projenin yanına ( içine değil) oluşturulur.
 
-If you're currently in your project directory, `cd` up one level. (This directory will also be called `AspNetCoreTodo`). Then use these commands to scaffold a new test project:
+Eğer şu anda projenizin ana dizinindeyseniz `cd` ile bir üst klasöre çıkın. Sonra aşağıdaki komutları uygulayarak yeni bir test projesi oluşturun.
 
 ```
 mkdir AspNetCoreTodo.UnitTests
@@ -20,9 +20,9 @@ cd AspNetCoreTodo.UnitTests
 dotnet new xunit
 ```
 
-xUnit.NET is a popular test framework for .NET code that can be used to write both unit and integration tests. Like everything else, it's a set of NuGet packages that can be installed in any project. The `dotnet new xunit` template already includes everything you need.
+xUnit.NET unit ve entegrasyon testi için kullanılan popüler bir test iskelettir. Her projemizde olduğu gibi bu proje de aslında NuGet paketlerinden oluşur. `dotnet new xunit` test için gerekli olan herşeyi sizin için oluşturur.
 
-Your directory structure should now look like this:
+Klasör yapınız şu anda aşağıdaki gibi olmalı:
 
 ```
 AspNetCoreTodo/
@@ -35,17 +35,17 @@ AspNetCoreTodo/
         AspNetCoreTodo.UnitTests.csproj
 ```
 
-Since the test project will use the classes defined in your main project, you'll need to add a reference to the main project:
+Test projesinde kullanacağınız sınıflar ana projede olduğundan dolayı bunları ana projeye atfetmeniz gerekmekte.
 
 ```
 dotnet add reference ../AspNetCoreTodo/AspNetCoreTodo.csproj
 ```
 
-Delete the `UnitTest1.cs` file that's automatically created. You're ready to write your first test.
+Ardından `UnitTest1.cs` dosyasınız silin. Artık test yazmaya hazırsınız.
 
-### Write a service test
+### Servis testi Yazma
 
-Take a look at the logic in the `AddItemAsync` method of the `TodoItemService`:
+`TodoItemService` içindeki `AddItemAsync` metodunun mantığına bakın:
 
 ```csharp
 public async Task<bool> AddItemAsync(NewTodoItem newItem, ApplicationUser user)
@@ -65,19 +65,18 @@ public async Task<bool> AddItemAsync(NewTodoItem newItem, ApplicationUser user)
     return saveResult == 1;
 }
 ```
+Bu metod gelen verilere bakarak yeni bir nesne üretir ve bunu veri tabanına yazar.
 
-This method makes a number of decisions or assumptions about the new item before it actually saves it to the database:
+* `OwnerId` giriş yapmış kullanının ID'si olmalı.
+* Yeni madde her zaman başlangıçta tamamlanmamış olmalı. (`IsDone = false`)
+* Başlık gelen objeden kopyalanmalı : `newItem.Title`
+* Her yeni gelen madde bitiş zamanı(`DueAt`) 3 gün sonra olarak ayarlanmalı.
 
-* The `OwnerId` property should be set to the user's ID
-* New items should always be incomplete (`IsDone = false`)
-* The title of the new item should be copied from `newItem.Title`
-* New items should always be due 3 days from now
+> Bu tipte alınan karalara **iş mantığı(Business Logic)** denir. Tabi bunun yanında **iş mantığı** hesaplamaları da içerir.
 
-> These types of decisions made by your code are called *business logic*, because it's logic that relates to the purpose or "business" of your application. Other examples of business logic include things like calculating a total cost based on product prices and tax rates, or checking whether a player has enough points to level up in a game.
+Bu karalar mantığın oluşmasına yardımcı olur. Örneğin başka birisi `AddItemAsync` içerisinde değişiklik yapıyor fakat daha önceki kararlardan haberi yok. Bu basit servisler için problem oluşturmayabilir. Fakat büyük servislerde bunun problem oluşturduğunu söylenebilir.
 
-These decisions make sense, and it also makes sense to have a test that ensures that this logic doesn't change down the road. (Imagine if you or someone else refactored the `AddItemAsync` method and forgot about one of these assumptions. It might be unlikely when your services are simple, but it becomes important to have automated checks as your application becomes more complicated.)
-
-To write a unit test that will verify the logic in the `TodoItemService`, create a new class in your test project:
+`TodoItemService` metodunu test eden sınıfı yeni oluşturduğunuz projede şu şekilde oluşturun: 
 
 **`AspNetCoreTodo.UnitTests/TodoItemServiceShould.cs`**
 
@@ -102,13 +101,13 @@ namespace AspNetCoreTodo.UnitTests
 }
 ```
 
-The `[Fact]` attribute comes from the xUnit.NET package, and it marks this method as a test method.
+`[Fact]` özelliği xUnit.NET paketinden gelmektedir, ve bu özelliği ekleyerek bu metodun **test** metodu olduğunu belirtmiş oldunuz.
 
-> There are many different ways of naming and organizing tests, all with different pros and cons. I like postfixing my test classes with `Should` to create a readable sentence with the test method name, but feel free to use your own style!
+> Testleri isimlendirmek için bir çok yöntem bulunmaktadır. Hepsinin pozitif ve negatif yanları vardır. Bu projede sondan ekleme ile test sınıflarını oluşturacaksınız. Örnek `TodoItemServiceShould`, elbette siz istediğiniz yöntemi kullanabilirsiniz.
 
-The `TodoItemService` requires an `ApplicationDbContext`, which is normally connected to your development or live database. You won't want to use that for tests. Instead, you can use Entity Framework Core's in-memory database provider in your test code. Since the entire database exists in memory, it's wiped out every time the test is restarted. And, since it's a proper Entity Framework Core provider, the `TodoItemService` won't know the difference!
+`TodoItemService` `ApplicationDbContext`'e bağımlıdır, yani canlıda bulunan veri tabanına. Bunu test için kullanmak doğru bir yöntem değildir. Bunun yerine Entity İskeletinde bulunan in-memory veri tabanı sağlayıcısını kullanabilirsiniz. Tüm veri tabanı hafıza'da yer aldığından. Test her başladığında temizlenir. Fakat `TodoItemService` bunun farkını anlamayacaktır.
 
-Use a `DbContextOptionsBuilder` to configure the in-memory database provider, and then make a call to `AddItem`:
+`DbContextOptionsBuilder` ile in-memory veri tabanı oluşturup sonrasında `AddItem`'a çağrı yapabilirsiniz.
 
 ```csharp
 var options = new DbContextOptionsBuilder<ApplicationDbContext>()

@@ -269,6 +269,6 @@ Admin kullanıcısı ile girdiğinizde sağ üst tarafta aşağıdaki gibi "Kull
 
 ## Özet
 
-ASP.NET Core oldukça güçlü bir güvenlik ve kimlik sistemidir. Bu sistem ile *kimlik doğrulaması* ve *izin* kontrolleri yapabilir. Buna harici kimlik servis sağlayıcılar(facebook, google, twitter) ekleyebilirsiniz. `dotnet new` şablonu size kullanıcı girişi ve kayıdı gibi genel senaryoları içeren projeyi oluşturur. 
+ASP.NET Core Kimlik oldukça güçlü bir güvenlik ve kimlik sistemidir. Bu sistem ile *kimlik doğrulaması* ve *izin* kontrolleri yapabilir. Buna harici kimlik servis sağlayıcılar(facebook, google, twitter) ekleyebilirsiniz. `dotnet new` şablonu size kullanıcı girişi ve kayıdı gibi genel senaryoları içeren projeyi oluşturur. 
 
 ASP.NET Core Kimlik ile ilgili daha detaylı bilgiyi https://docs.asp.net adresinde bulabilirsiniz.
