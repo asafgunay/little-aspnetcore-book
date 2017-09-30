@@ -1,26 +1,29 @@
-# Deploy the application
-You've come a long way, but you're not quite done yet. Once you've created a great application, you need to share it with the world!
+# Uygulamanın Dağıtılması
 
-Because ASP.NET Core applications can run on Windows, Mac, or Linux, there are a number of different ways you can deploy your application. In this chapter, I'll show you the most common (and easiest) ways to go live.
+Uzun bir yol geldiniz, fakat henüz tam anlamıyla bitti diyemeyiz. Artık bu harika uygulamanızı yaptığınıza göre dünya ile paylaşma zamanı geldi demektir.
 
-## Deployment options
+ASP.NET uygulamaları Windows, Mac veya Linux ortamlarında çalışabildiğinden dolayı bir çok farklı yöntem ile uygulamanızı dağıtabilirsiniz. Bu bölümde en fazla kullanılan yöntemleri göreceksiniz.
 
-ASP.NET Core applications are typically deployed to one of these environments:
+## Dağıtma Yöntemleri
 
-* **Any Docker host**. Any machine capable of hosting Docker containers can be used to host an ASP.NET Core application. Creating a Docker image is a very quick way to get your application deployed, especially if you're familiar with Docker. (If you're not, don't worry! I'll cover the steps later.)
+ASP.NET Core uygulamaları genel olarak aşağıdaki ortamlardan birisine kurulur.
 
-* **Azure**. Microsoft Azure has native support for ASP.NET Core applications. If you have an Azure subscription, you just need to create a Web App and upload your project files. I'll cover how to do this with the Azure CLI in the next section.
+* **Herhangi bir Docker Hostuna** Docker koşabilecek herhangi bir makineye ASP.NET uygulaması dağıtılabilir. Docker ile daha önceden çalıştıysanız çok hızlı bir şekilde imaj oluşturup uygulamanızı dağıtabilirsiniz.
 
-* **Linux (with Nginx)**. If you don't want to go the Docker route, you can still host your application on any Linux server (this includes Amazon EC2 and DigitalOcean virtual machines). It's typical to pair ASP.NET Core with the Nginx reverse proxy. (More about Nginx below.)
+* **Azure** Microsoft Azure ASP.NET Core uygulamaları için doğrudan destek verir. Eğer Azure servisine kayıtlıysanız, yeni bir web uygulaması oluşturup dosyalarınızı kopyalarsanız projenizi doğrudan çalıştırabilirsiniz. Bunun nasıl yapılacağını ileride Azure CLI üzerinden göreceksiniz.
 
-* **Windows**. You can use the IIS web server on Windows to host ASP.NET Core applications. It's usually easier (and cheaper) to just deploy to Azure, but if you prefer managing Windows servers yourself, it'll work just fine.
+* **Linux ( Nginx ile)** Eğer Docker ile çalışmak istemiyorsanız, uygulamnızı yine de herhangi bir Linux Sunucusu üzerinden koşabilirsiniz. Bunlar Amazon Ec2 veya DigitalOcean sanal makineleri olabilir. Genelde ASP.NET Core ve Nginx reverse proxy yapılarak kullanılırlar. Aşağıda daha geniş bir şekilde göreceksiniz.
 
-## Kestrel and reverse proxies
 
-> If you don't care about the guts of hosting ASP.NET Core applications and just want the step-by-step instructions, feel free to skip to one of the next two sections!
+* **Windows** Windows IIS web sunucusunu kullanarak ASP.NET Core uygulaması çalıştırabilirsiniz. Genelde Azure'a kurmak daha kolay ve ucuz yöntem olsa da Windows Sunucularını kendiniz kontrol etmek istiyorsanız bu yöntemi kullanabilirsiniz.
 
-ASP.NET Core includes a fast, lightweight development web server called Kestrel. It's the server you've been using every time you ran the app locally and browsed to `http://localhost:5000`. When you deploy your application to a production environment, it'll still use Kestrel behind the scenes. However, it's recommended that you put a reverse proxy in front of Kestrel, because Kestrel doesn't yet have load balancing and other features that bigger web servers have.
 
-On Linux (and in Docker containers), you can use Nginx or the Apache web server to receive incoming requests from the internet and route them to your application hosted with Kestrel. If you're on Windows, IIS does the same thing.
+## Kestrel ve reverse proxy.
 
-If you're using Azure to host your application, this is all taken care of for you automatically. I'll cover setting up Nginx as a reverse proxy in the Docker section.
+>  Eğer ASP.NET Core uygulamasını internet ortamına taşımayı istemiyorsanız bundan sonraki bölümleri atlayabilirsiniz.
+
+ASP.NET Core Kestrel adında hızlı ve oldukça hafif bir geliştirme sunucusu kullanır. Projede aslında şimdiye kadar hep bu sunucuyu kullandınız. Uygulamayı kullanılacak(production - live - canlı ) ortama taşıdığınızda yine Kestrel kullanarak çalışabilir. Fakat önerilen yöntem; reverse proxy yaparak Kestrel'in önüne daha yetkin ( load blancing özelliği olan ) bir sunucu kurmaktır.
+
+Linuxta  ve Docker Konteynırında, Nginx veya Apache web server kurarak gelen taleplerin Kestrel'e iletilmesini sağlayabilirsiniz. Windows sunucuda IIS aslında aynı işi yapmaktadır. 
+
+Eğer uygulamanızı Azure üzerinde tutuyorsanız, bunların hepsi otomatik olarak sizin yerinize yapılmaktadır. Nginx ile reverse proxy yapma olayını **Docker ile Dağıtma** bölümünde göreceksiniz.

@@ -1,28 +1,28 @@
-## Deploy to Azure
+## Azure'a Dağıtma
 
-Deploying your ASP.NET Core application to Azure only takes a few steps. You can do it through the Azure web portal, or on the command line using the Azure CLI. I'll cover the latter.
+ASP.NET uygulamasının Azure'a dağıtılması sadece bir kaç adımdan oluşur. Bu işlem Azure web ortamından yapılacağı gibi, komut satırı üzerinden de yapılabilir. Bunu daha sonra göreceksiniz.
 
-### What you'll need
 
-* Git (use `git --version` to make sure it's installed)
-* The Azure CLI (follow the install instructions at https://github.com/Azure/azure-cli)
-* An Azure subscription (the free subscription is fine)
-* A deployment configuration file in your project root
+### Ne yapmalıyız
 
-### Create a deployment configuration file
+* Komut satırından ( `git --version` kullanarak git'in kurulu olup olmadığını kontrol ediniz.)
 
-Since there are multiple projects in your directory structure (the web application, and two test projects), Azure won't know which one to show to the world. To fix this, create a file called `.deployment` at the very top of your directory structure:
+* Azure CLI'ı kurun (https://github.com/Azure/azure-cli)
+* Azure bedava paketine kayıt olun.
+* Dağıtma için projenin ana klasöründeki dosyayı değiştirin.
 
+### Yeni bir dağıtım yapılandırma dosyası oluşturun.
+
+Bizim şu anda 3 tane farklı projemiz olduğundan Azure bunlardan hangisinin dünyaya gösterileceğini bilmemektedir. Bunu düzelmek için bu klasörlerin bulunduğu klasöre `.deployment` adında bir dosya oluştun. 
 **`.deployment`**
 
 ```ini
 [config]
 project = AspNetCoreTodo/AspNetCoreTodo.csproj
 ```
+`.deployment` olarak adlandırıldığına emin olur. ( Windows işletim sisteminde dosyayı `".deployment"` şeklinde kaydederek sağlayabilirsiniz.)
 
-Make sure you save the file as `.deployment` with no other parts to the name. (On Windows, you may need to put quotes around the filename, like `".deployment"`, to prevent a `.txt` extension from being added.)
-
-If you `ls` or `dir` in your top-level directory, you should see these items:
+Eğer komut satırından `ls` veya `dir`ile bu klasöre giderseniz şunları göreceksiniz:
 
 ```
 .deployment
@@ -31,52 +31,51 @@ AspNetCoreTodo.IntegrationTests
 AspNetCoreTodo.UnitTests
 ```
 
-### Set up the Azure resources
+### Azure kaynaklarının ayarlanması
 
-
-If you just installed the Azure CLI for the first time, run
+Eğer Azure CLI'ı ilk defa kurduysanız aşağıdaki komutu çalıştırın
 
 ```
 az login
 ```
-
-and follow the prompts to log in on your machine. Then, create a new Resource Group for this application:
+Adrından kullanıcı adı ve şifrenizi yazıp giriş yapın.Sonrasında uygulamamız için yeni bir Kaynak Grubu oluşturun
 
 ```
 az group create -l westus -n AspNetCoreTodoGroup
 ```
 
-Next, create an App Service plan in the group you just created:
+Sonrasında yeni bir `App Service Plan`(Uygulama Servis Planı) oluşturmanız gerekmekte
 
 ```
 az appservice plan create -g AspNetCoreTodoGroup -n AspNetCoreTodoPlan --sku F1
 ```
 
-> Sidebar: `F1` is the free app plan. If you want to use a custom domain name with your app, use the D1 ($10/month) plan or higher.
+> `F1` bedava servis planı, eğer kendi domaininizde kullanmak istiyorsanız bunun yerine aylık 10$ vererek D1 planını seçebilirsiniz.
 
-Now create a Web App in the App Service plan:
+Şimdi Uygulama Servis Planı içerisine web uygulamanızı oluşturun
+
 
 ```
 az webapp create -g AspNetCoreTodoGroup -p AspNetCoreTodoPlan -n MyTodoApp
 ```
+Uygulamanın ismi (`MyTodoApp`) Azure içerisinde eşsiz olmalı. Uygulama çalıştığında varsayılan URL bu uygulama ismi olacaktır. Örneğin : http://mytodoapp.azurewebsites.net
 
-The name of the app (`MyTodoApp` above) must be globally unique in Azure. Once the app is created, it will have a default URL in the format: http://mytodoapp.azurewebsites.net
 
-### Update the application settings
+### Uygulama ayarlarını güncelleme
 
-> Sidebar: This is only necessary if you configured Facebook login in the *Security and identity* chapter.
+> Bu sadece eğer **Güvenlik ve Kimlik** bölümünde Facebook ile giriş işlemini yaptıysanız gerekmektedir.
 
-Your application won't start up properly if it's missing the `Facebook:AppId` and `Facebook:AppSecret` configuration values. You'll need to add these using the Azure web portal:
+Uygulamanız `Facebook:AppId` ve `Facebook:AppSecret` ayarları olmadan çalışamayacaktır. Bunları Azure web portalını kullanarak eklemeniz gerekmektedir.
 
-1. Log in to your Azure account via https://portal.azure.com
-1. Open your Web App (called `MyTodoApp` above)
-1. Click on the **Application settings** tab
-1. Under the **App settings** section, add `Facebook:AppId` and `Facebook:AppSecret` with their respective values
-1. Click **Save** at the top
+1. Azure hesabı ile https://portal.azure.com sitesine girin.
+1. Oluşturduğunuz web uygulamasını açın : `MyTodoApp` 
+1. **Application Settings** (Uygulama ayarları) tabına tıklayın.
+1. **App settings** bölümün altına `Facebook:AppId` ve `Facebook:AppSecret` değerlerini facebooktan aldığınız değerlere göre değiştirin.
+1. Üstte bulunan **Save** butonuna tıklayarak değişiklikleri kaydedin.
 
-### Deploy your project files to Azure
+### Proje dosyalarının Azure'a dağıtılması
 
-You can use Git to push your application files up to the Azure Web App. If your local directory isn't already tracked as a Git repo, run these commands to set it up:
+Bunun için Git kullanabilirsiniz. Hala local klasöreleri Gir ile takip edilmiyorsa aşağıdaki komutları yazın. Bu komutları tüm projeleri içeren klasöre içinde yapabilirsiniz.
 
 ```
 git init
@@ -84,13 +83,12 @@ git add .
 git commit -m "First commit!"
 ```
 
-Next, create an Azure username and password for deployment:
+Sonrasında Azure kullanıcı adı ve şifresi oluşturun.
 
 ```
 az webapp deployment user set --user-name nate
 ```
-
-Follow the instructions to create a password. Then use `config-local-git` to spit out a Git URL:
+Buradaki komutları inceleyerek `config-local-git` ile bir github linki çıktısı almanız lazım.
 
 ```
 az webapp deployment source config-local-git -g AspNetCoreTodoGroup -n MyTodoApp --out tsv
@@ -98,16 +96,15 @@ az webapp deployment source config-local-git -g AspNetCoreTodoGroup -n MyTodoApp
 https://nate@mytodoapp.scm.azurewebsites.net/MyTodoApp.git
 ```
 
-Copy the URL to the clipboard, and use it to add a Git remote to your local repository:
+Bu URL'i kopyalayın ve sonra tekrar projenin ana klasöründe bulunan git reposuna aşağıdaki gibi remote(uzak) olarak gösterin
 
 ```
-git remote add azure <paste>
+git remote add azure <yapıştır>
 ```
 
-You only need to do these steps once. Now, whenever you want to push your application files to Azure, check them in with Git and run
-
+Bu adımları sadece bir defa yapmanız lazım. Eğer ileride dosyalarınızı tekrar Azure'a göndermek isterseniz. Commit ettikten sonra tek yapmanız gereken
 ```
 git push azure master
 ```
 
-You'll see a stream of log messages as the application is deployed to Azure. When it's complete, browse to http://yourappname.azurewebsites.net to check it out!
+Önünüze bir çok log mesaji dökülecek ve en sonunda Azure'a dağıtıldığını göreceksiniz. Uygulama adresinize ( http://uygulamaismi.azuerwebsites.net) eriştiğinizde projenizin çalıştığını göreceksiniz.

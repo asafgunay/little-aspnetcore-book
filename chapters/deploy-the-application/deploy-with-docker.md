@@ -1,67 +1,71 @@
-## Deploy with Docker
+## Docker ile Dağıtma
 
-Containerization technologies like Docker can make it much easier to deploy web applications. Instead of spending time configuring a server with the dependencies it needs to run your app, copying files, and restarting processes, you can simply create a Docker image that contains everything your app needs to run, and spin it up as a container on any Docker host.
+Docker gibi konteyner teknolojileri web uygulamalarının dağıtımını oldukça kolaylaştırmıştır. Sunucu ayarlama, gerekli eklentilerin yüklenmesi vs. dosyların kopyalanması, sunucunun her defasında yeniden başlatılması gibi işlemler tek bir seferde Docker imaji alınarak ortadan kaldırılabilir. Yapmanız gereken imajı Docker çalıştırabilecek bir sunucuya yerleştirmek. 
 
-Docker can make scaling your app across multiple servers easier, too. Once you have an image, using it to create 1 container is the same process as creating 100 containers.
+Projenizi ölçeklendirme açısından da Docker oldukça yararlıdır. Eğer imaj oluşturduysanız 1 konteyner ile 100 konteyner oluşturma sırasında aynı işlemi yaparsınız.
 
-Before you start, you need the Docker CLI installed on your development machine. Search for "get docker for (mac/windows/linux)" and follow the instructions on the official Docker website. You can verify that it's installed correctly with
+Başlamadan önce Docker CLI'ın bilgisayarına kurulu olması gerekmekte. Bunun için internetten işletim sisteminize göre Docker'ı indirip kurun, resmi web sitesi en güvenilir kaynaktır.
 
 ```
 docker --version
 ```
 
-> If you set up Facebook login in the *Security and identity* chapter, you'll need to use Docker secrets to securely set the Facebook app secret inside your container. Working with Docker secrets is outside the scope of this book. If you want, you can comment out the `AddFacebook` line in the `ConfigureServices` method to disable Facebook log in.
+> Eğer **Güvenlik ve Kimlik** bölümünde Facebook ile giriş bölümünü kodladıysanız Docker'a Facebook ID ve appSecret'i bildirmeniz gerekmekte. Docker ayarlarının bu değerler için nasıl yapılacağı bu kitabın konusu değildir. Eğer istiyorsanız `ConfigureServices` içerisindeki `AddFacebook` bölümünü komut satırı yaparak Facebook ile girişi şimdilik iptal edebilirsiniz.
 
-### Add a Dockerfile
 
-The first thing you'll need is a Dockerfile, which is like a recipe that tells Docker what your application needs.
+### Docker dosyası oluşturma
 
-Create a file called `Dockerfile` (no extension) in the web application root, next to `Program.cs`. Open it in your favorite editor. Write the following line:
+İlk yapmanız gereken Docker dosyası oluşturma, Docker dosyası uygulanızın nelere ihtiyacı olduğunu belirtmenizi sağlar.
+
+Eklentisiz bir şekilde `Dockerfile` adında bir dosya oluşturun. Bunu uygulama içerisinde yapmanız lazım yani `Program.cs` nin olduğu yerde.
+
+bu dosyayı açın ve aşağıdaki satırı ekleyin
 
 ```dockerfile
 FROM microsoft/dotnet:latest
 ```
 
-This tells Docker to start your image from an existing image that Microsoft publishes. This will make sure the container has everything it needs to run an ASP.NET Core app.
+Bu Docker'a başlangıç imajı olarak Microsoft'un yayınladığı imajı al demek. Bu ASP.NET Core uygulaması için gerekli herşeyin alınmasını sağlar.
 
 ```dockerfile
 COPY . /app
 ```
 
-The `COPY` command copies the contents of your local directory (the source code of your application) into a directory called `/app` in the Docker image.
+`COPY` komutu bilgisayarınızda bulunan klasörün proje klasörünüzün `/app` adında bir klasörün içine kopyalanmasını sağlar. 
+
 
 ```dockerfile
 WORKDIR /app
 ```
+`WORKDIR` Windows komut satırında bulunan `cd`'ye denk gelir. Yani bundan sonraki yazacağımız komutlar `/app` klasörü içerisinde çalışacaktır.
 
-`WORKDIR` is the Docker equivalent of `cd`. The remainder of the commands in the Dockerfile will run from inside the `/app` folder.
 
 ```dockerfile
 RUN ["dotnet", "restore"]
 RUN ["dotnet", "build"]
 ```
 
-These commands will execute `dotnet restore` (which downloads the NuGet packages your application needs) and `dotnet build` (which compiles the application).
+Bu komutlar `dotnet restore` ( Nuget paketlerinin indirilmesine yarar ) ve `dotnet build` ( uygulamayı derler
+
 
 ```dockerfile
 EXPOSE 5000/tcp
 ```
-
-By default, Docker containers don't expose any network ports to the outside world. You have to explicitly let Docker know that your app will be communicating on port 5000 (the default Kestrel port).
+Normalde Docker konteynırı hiç bir porttan dışarıya veri alıp vermeye izin vermez bunun için `EXPOSE` ile hangi portu açması gerektiğini söylediniz. Kestrel sunucunun varsayılan portu 5000 olduğundan 5000 kullandınız.
 
 ```dockerfile
 ENV ASPNETCORE_URLS http://*:5000
 ```
+`ENV` komutu çevre değişkenlerini tanımlar. Uygulamanın `ASPNETCORE_URLS` ile hangi porttan çalışacağını ayarlamanız lazım
 
-The `ENV` command sets environment variables in the container. The `ASPNETCORE_URLS` variable tells ASP.NET Core which network interface and port it should bind to.
+
 
 ```dockerfile
 ENTRYPOINT ["dotnet", "run"]
 ```
+Son olarak uygulamanın `dotnet run` komutu ile çalışması için yukarıdaki satırı eklediniz.
 
-The last line of the Dockerfile starts up your application with the `dotnet run` command. Kestrel will start listening on port 5000, just like it does when you use `dotnet run` on your local machine.
-
-The full Dockerfile looks like this:
+Bu işlemler sonunda docker dosyası aşağıdaki gibi görünecektir.
 
 **`Dockerfile`**
 
@@ -76,25 +80,28 @@ ENV ASPNETCORE_URLS http://*:5000
 ENTRYPOINT ["dotnet", "run"]
 ```
 
-### Create an image
+### İmaj Oluşturma
 
-Make sure the Dockerfile is saved, and then use `docker build` to create an image:
+`Dockerfile`'i kaydettiğinize emin olun. Sonra `docker build` ile imajı şu şekilde oluşturabilirsiniz : 
+
 
 ```
 docker build -t aspnetcoretodo .
 ```
+En sondaki `.`'yı unutmayın bu `dockerfile`'in aynı klasörde olduğunu belirtiyor.
 
-Don't miss the trailing period! That tells Docker to look for a Dockerfile in the current directory.
-
-Once the image is created, you can run `docker images` to to list all the images available on your local machine. To test it out in a container, run
+İmaj oluştuktan sonra `docker images` ile tüm oluşturulmuş imajları görebilirsiniz. Artık bu imajı test edebilirsiniz. Bunun için aşağıdaki satırı çalıştırın:
 
 ```
 docker run -it -p 5000:5000 aspnetcoretodo
 ```
 
-The `-it` flag tells Docker to run the container in interactive mode. When you want to stop the container, press `Control-C`.
+`-it` bayrağı Docker'a konteynerın interaktif modda çalıştırılacağını söyler.
 
-### Set up Nginx
+
+### Nginx'in kurulması
+
+
 
 At the beginning of this chapter, I mentioned that you should use a reverse proxy like Nginx to proxy requests to Kestrel. You can use Docker for this, too.
 
