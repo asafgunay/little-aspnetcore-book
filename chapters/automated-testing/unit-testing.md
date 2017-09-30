@@ -127,8 +127,7 @@ using (var inMemoryContext = new ApplicationDbContext(options))
     await service.AddItemAsync(new NewTodoItem { Title = "Testing?" }, fakeUser);
 }
 ```
-
-The last line creates a new to-do item called `Testing?`, and tells the service to save it to the (in-memory) database. To verify that the business logic ran correctly, retrieve the item:
+Son satır `Testing?` adında yeni bir yapılacak maddesi ekler ve in-memory veri tabanına bunu kaydetmesini söyler. Bu iş mantığının doğru çalışabilmesi için kaydılan veriyi veri tabanından almalı ve kontrol etmelisiniz.
 
 ```csharp
 // Use a separate context to read the data back from the DB
@@ -142,14 +141,13 @@ using (var inMemoryContext = new ApplicationDbContext(options))
     Assert.True(DateTimeOffset.Now.AddDays(3) - item.DueAt < TimeSpan.FromSeconds(1));
 }
 ```
+Öncelikle mantık testi: Sadece 1 tane veri olmalı, sonrasında bu verileri `FirstAsync` ile almalı ve beklenen değerler uygunmu bu kontrol edilmeli.
 
-The first verification step is a sanity check: there should never be more than one item saved to the in-memory database. Assuming that's true, the test retrieves the saved item with `FirstAsync` and then asserts that the properties are set to the expected values.
+Tarihi kontrol etmek biraz çetrefilli, iki tarihin eşitli milisaniye bazında neredeyse her zaman yanlış olacağından. Bunu aralık kontrolç olarak yapmak daya bantıklıdır. Son satırda bunu görebilirsiniz. 
 
-Asserting a datetime value is a little tricky, since comparing two dates for equality will fail if even the millisecond components are different. Instead, the test checks that the `DueAt` value is less than a second away from the expected value.
+> Hem unit testi hem de entegrasyon testi AAA kalıbını takip eder: objeler ve veriler önce ayarlanır, sonra bazı işlemler yapılır ve son olarak Assert ile bunların kontrolleri, beklenen değerleri karşılayıp karşışamadıkları kontrol edilir.
 
-> Both unit and integration tests typically follow the AAA (Arrange-Act-Assert) pattern: objects and data are set up first, then some action is performed, and finally the test checks (asserts) that the expected behavior occurred.
-
-Here's the final version of the `AddNewItem` test:
+`AddNewItem`'ın son hali:
 
 **`AspNetCoreTodo.UnitTests/TodoItemServiceShould.cs`**
 
@@ -184,15 +182,15 @@ public class TodoItemServiceShould
 }
 ```
 
-### Run the test
+### Testi çalıştırma
 
-On the terminal, run this command (make sure you're still in the `AspNetCoreTodo.UnitTests` directory):
+Terminalde ( şu anda `AspNetCoreTodo.UnitTests` klasöründe olduğunuzu varsayarak) aşağıdaki kodu çalıştırın.
 
 ```
 dotnet test
 ```
+`Test` komutu tüm projeyi kontrol ederk test olarak tanımladığınız ( `[Fact]`) metodları veya sınıfları bulur ve aşağıdaki gibi bir çıktı veririr.
 
-The `test` command scans the current project for tests (marked with `[Fact]` attributes in this case), and runs all the tests it finds. You'll see an output similar to:
 
 ```
 Starting test execution, please wait...
@@ -206,8 +204,9 @@ Test Run Successful.
 Test execution time: 1.9074 Seconds
 ```
 
-You now have one test providing test coverage of the `TodoItemService`. As an extra-credit challenge, try writing unit tests that ensure:
+`TodoItemService`'i kapsayan (Coverage) bir test sunmuş oldunuz. Artık aşağıdaki testleri yazabilirsiniz.
 
-* `MarkDoneAsync` returns false if it's passed an ID that doesn't exist
-* `MarkDoneAsync` returns true when it makes a valid item as complete
-* `GetIncompleteItemsAsync` returns only the items owned by a particular user
+* `MarkDoneAsync` eğer paslanan ID yok ise false dönsün.
+* `MarkDoneAsync` eğer gerçekten var olan bir maddeyi tamamlandı olarak işaretler ise true dönsün.
+* `GetIncompleteItemsAsync` sadece belirli bir kullanıcıya ait verileri döndürür.
+
