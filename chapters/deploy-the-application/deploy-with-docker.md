@@ -101,19 +101,16 @@ docker run -it -p 5000:5000 aspnetcoretodo
 
 ### Nginx'in kurulması
 
+Bu bölümün başında reverse proxy ile Nginx veya apache kullanarak Kerstel'e gelen talepleri reverse proxy yapmamız gerektiğini söylemiştim.
 
+Genel mimarimiz iki tane konteynerdan oluşacak: Birincisi 80 portinu dinleyen ve 5000 portuna yönlendiren Nginx ve 5000 portundan bu taleplere cevap veren Kerstel.
 
-At the beginning of this chapter, I mentioned that you should use a reverse proxy like Nginx to proxy requests to Kestrel. You can use Docker for this, too.
-
-The overall architecture will consist of two containers: an Nginx container listening on port 80, forwarding requests to a separate container running Kestrel and listening on port 5000.
-
-The Nginx container needs its own Dockerfile. To keep it from colliding with the Dockerfile you just created, make a new directory in the web application root:
-
+Nginx kendi Dockerfile'ına ihtiyaç duyar. Daha önce yazdığınız Dockerfile ile karışmasın diye web uygulamasının ana dizininde bir tane klasör oluşturun.
 ```
 mkdir nginx
 ```
 
-Create a new Dockerfile and add these lines:
+içerisine yeni bir `Dockerfile` oluşturup şu satırları ekleyin.
 
 **`nginx/Dockerfile`**
 
@@ -121,8 +118,7 @@ Create a new Dockerfile and add these lines:
 FROM nginx
 COPY nginx.conf /etc/nginx/nginx.conf
 ```
-
-Next, create an `nginx.conf` file:
+Sonra bu klasör içinde `nginx.conf` dosyasını oluşturun ve aşağıdaki satırları yapıştırın
 
 **`nginx/nginx.conf`**
 
@@ -145,12 +141,12 @@ http {
         }
 }
 ```
+Bu ayar dosyası Nginx'e gelen taleplerin `http://kestel:5000 adresine yönlendirilmesi gerektiğini söyler. (Neden `kerstel:5000` kullandığımızı az sonra göreceksiniz.)
 
-This configuration file tells Nginx to proxy incoming requests to `http://kestrel:5000`. (You'll see why `kestrel:5000` works in a moment.)
 
-### Set up Docker Compose
+### Docker düzenleyici oluşturma
 
-There's one more file to create. Up in the web application root directory, create `docker-compose.yml`:
+Web uygulamasının ana klasörüne `docker-compose.yml` adında bir dosya oluşturun.
 
 **`docker-compose.yml`**
 
@@ -167,18 +163,19 @@ kestrel:
         - "5000"
 ```
 
-Docker Compose is a tool that helps you create and run multi-container applications. This configuration file defines two containers: `nginx` from the `./nginx/Dockerfile` recipe, and `kestrel` from the `./Dockerfile` recipe. The containers are explicitly linked together so they can communicate.
+Docker Compose birden fazla containerin birlikte oluşturulmasını ve çalışmasını sağlar. Yukarıda 2 tane konteyner tanımlanır. Bunlar `./nginx/Dockerfile`'da bulunan `nginx` ve `./Dockerfile` da bulunan `kestrel`. Doğrudan ikisiyle bağlantılı olarak çalıştırıldığından iletişimleri sağlanmış olur.
 
-You can try spinning up the entire multi-container application by running:
+Birden fazla konteyner içeren uygulamalar aşağıdaki gibi çalıştırılır
+
 
 ```
 docker-compose up
 ```
 
-Try opening a browser and navigating to `http://localhost` (not 5000!). Nginx is listening on port 80 (the default HTTP port) and proxying requests to your ASP.NET Core application hosted by Kestrel.
+Tarayıcıyı açıp `http://localhost`'a gidin(dikkat ederseniz 5000 portunu yazmadık). Nginx 80 portunu dinlediğinden doğrudan bu telebi proxy ile ASP.NET Core uygulamasına yönlendirir.
 
-### Set up a Docker server
+### Docker sunucusu kurma
 
-Specific setup instructions are outside the scope of this Little book, but any modern Linux distro (like Ubuntu) can be set up as a Docker host. For example, you could create a virtual machine with Amazon EC2, and install the Docker service. You can search for "amazon ec2 set up docker" (for example) for instructions.
+Docker sunucusu kurma adımları bu kitabın kapsamı içeriisnde değildir. Fakat modern bir linux sürümüne Docker servisi kurulabilir. Örneğin Amazon EC2 sanal makinesine Docker kurmal mümkündür. Bunun için internete "amazon ec2 set up docker" diye aratırsanız birçok yönerge bulabilirsiniz.
 
-I prefer DigitalOcean because they've made it really easy to get started. DigitalOcean has both a pre-built Docker virtual machine, and in-depth tutorials for getting Docker up and running (search for "digitalocean docker").
+Dijital Ocean dökümanları ve sistemi EC2'ye göre daha kolay olduğundan öncelikle DigitalOcean tercih edilebilir.
